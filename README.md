@@ -34,7 +34,7 @@ yay -S catppuccin-mocha-gtk-themes catppuccin-mocha-cursors
 ### 2. Clone and deploy
 
 ```bash
-git clone <your-repo-url> ~/hyprland-dotfiles
+git clone https://github.com/pjh456/hyprland-conf ~/hyprland-dotfiles
 cd ~/hyprland-dotfiles
 
 # Back up your existing configs first!
@@ -62,29 +62,29 @@ done
 ### 4. Start Hyprland
 
 ```bash
-Hyprland
+start-hyprland
 ```
 
 On first start, `init.sh` will stop and restart `hyprland-session.target` to pick up all services. On subsequent starts it only starts individual services that aren't running.
 
 ## Keybindings
 
-| Key | Action |
-|---|---|
-| `Super + Return` | Open foot terminal |
-| `Super + Q` | Close window |
-| `Super + Space` | Rofi application launcher |
-| `Super + L` | Power menu (shutdown/reboot/lock/suspend/logout) |
-| `Alt + Tab` | Hyprswitch window switcher |
-| `Super + V` | Clipboard history (cliphist + rofi) |
-| `Super + T` | Toggle floating |
-| `Super + N` | Toggle notification center (swaync) |
-| `Super + F5` | Reload Hyprland + Waybar |
-| `Ctrl + Alt + A` | Screenshot region (grim + slurp) |
-| `Super + F` | Fullscreen |
-| `Super + 1-5` | Switch workspace |
-| `Super + Shift + 1-5` | Move window to workspace |
-| `Super + R` | Resize mode (arrow keys to resize) |
+| Key                   | Action                                           |
+| --------------------- | ------------------------------------------------ |
+| `Super + Return`      | Open foot terminal                               |
+| `Super + Q`           | Close window                                     |
+| `Super + Space`       | Rofi application launcher                        |
+| `Super + L`           | Power menu (shutdown/reboot/lock/suspend/logout) |
+| `Alt + Tab`           | Hyprswitch window switcher                       |
+| `Super + V`           | Clipboard history (cliphist + rofi)              |
+| `Super + T`           | Toggle floating                                  |
+| `Super + N`           | Toggle notification center (swaync)              |
+| `Super + F5`          | Reload Hyprland + Waybar                         |
+| `Ctrl + Alt + A`      | Screenshot region (grim + slurp)                 |
+| `Super + F`           | Fullscreen                                       |
+| `Super + 1-5`         | Switch workspace                                 |
+| `Super + Shift + 1-5` | Move window to workspace                         |
+| `Super + R`           | Resize mode (arrow keys to resize)               |
 
 ## File Structure
 
