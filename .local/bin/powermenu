@@ -1,0 +1,13 @@
+#!/bin/dash
+
+entries="  Shutdown\n  Reboot\n  Lock\n  Suspend\n  Logout"
+
+selected=$(printf "$entries" | rofi -dmenu -p " Power" -theme-str 'window {width: 200px;} listview {columns: 1; lines: 5;} element-text {font: "JetBrainsMono Nerd Font 14";}' -l 5 -width 20)
+
+case "$selected" in
+  "  Shutdown") poweroff ;;
+  "  Reboot")   reboot ;;
+  "  Lock")     hyprlock ;;
+  "  Suspend")  systemctl suspend ;;
+  "  Logout")   hyprctl dispatch exit ;;
+esac

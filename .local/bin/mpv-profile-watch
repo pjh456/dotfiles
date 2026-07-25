@@ -1,0 +1,7 @@
+#!/bin/dash
+last=""
+while sleep 10; do
+    raw=$(tlp-stat -s 2>/dev/null | grep -oP 'TLP profile\s*=\s*\K\S+' || echo "balanced/BAT")
+    [ "$raw" != "$last" ] && /home/pjh123/.local/bin/mpv-profile-switch
+    last="$raw"
+done

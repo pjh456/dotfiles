@@ -1,0 +1,2 @@
+.config/systemd/user/*.target.wants/
+.config/systemd/user/sockets.target.wants/

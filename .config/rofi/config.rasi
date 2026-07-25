@@ -1,0 +1,150 @@
+configuration {
+  modi: "drun,calc,emoji";
+  font: "JetBrainsMono Nerd Font 14";
+  icon-theme: "Papirus-Dark";
+  show-icons: true;
+  drun-display-format: "{name}";
+  display-drun: "   Apps";
+  display-calc: "   Calc";
+  display-emoji: " 󰞅  Emoji";
+}
+
+* {
+  bg:        #1e1e2e;
+  bg-alt:    #181825;
+  fg:        #cdd6f4;
+  fg-alt:    #bac2de;
+  dim:       #585b70;
+  blue:      #89b4fa;
+  green:     #a6e3a1;
+  red:       #f38ba8;
+  yellow:    #f9e2af;
+  surface:   #313244;
+  overlay:   #45475a;
+}
+
+window {
+  background-color:           var(bg);
+  text-color:                 var(fg);
+  border-radius:              12px;
+  border:                     0px;
+  width:                      600;
+  padding:                    0px;
+}
+
+mainbox {
+  children:           [inputbar, listview];
+  background-color:   var(bg);
+  border-radius:      12px;
+  padding:            0px;
+  spacing:            8px;
+}
+
+inputbar {
+  children:           [prompt, entry, num-filtered-rows, case-indicator];
+  background-color:   var(bg-alt);
+  border-radius:      10px;
+  padding:            10px 16px;
+  margin:            10px 10px 0 10px;
+  spacing:           12px;
+}
+
+prompt {
+  text-color:         var(blue);
+  font:               "JetBrainsMono Nerd Font 16";
+}
+
+entry {
+  text-color:         var(fg);
+  font:               "JetBrainsMono Nerd Font 14";
+  placeholder:        "Search...";
+}
+
+num-filtered-rows {
+  text-color:         var(dim);
+  expand:             false;
+}
+
+case-indicator {
+  text-color:         var(dim);
+  expand:             false;
+}
+
+listview {
+  background-color:   transparent;
+  padding:            0px 10px 10px 10px;
+  spacing:            4px;
+  layout:             vertical;
+  columns:            2;
+  cycle:              true;
+  dynamic:            true;
+  scrollbar:          false;
+}
+
+element {
+  background-color:   transparent;
+  text-color:         var(fg);
+  border-radius:      8px;
+  padding:            8px 12px;
+  spacing:           10px;
+}
+
+element normal {
+  background-color:   transparent;
+  text-color:         var(fg);
+}
+
+element selected {
+  background-color:   var(blue);
+  text-color:         #1e1e2e;
+  border-radius:      8px;
+}
+
+element urgent {
+  background-color:   var(red);
+  text-color:         #1e1e2e;
+}
+
+element active {
+  background-color:   var(green);
+  text-color:         #1e1e2e;
+}
+
+element-icon {
+  size:               28px;
+}
+
+element-text {
+  text-color:         inherit;
+  font:               "JetBrainsMono Nerd Font 13";
+  vertical-align:     0.5;
+  horizontal-align:   0.0;
+}
+
+button {
+  background-color:   var(surface);
+  text-color:         var(fg);
+  border-radius:      8px;
+  padding:           8px;
+}
+
+button selected {
+  background-color:   var(blue);
+  text-color:         #1e1e2e;
+}
+
+error-message {
+  background-color:   var(bg);
+  border-radius:      12px;
+  padding:           16px;
+}
+
+textbox {
+  text-color:         var(fg);
+  background-color:   transparent;
+}
+
+scrollbar {
+  handle-color:       var(overlay);
+  handle-width:       4px;
+}

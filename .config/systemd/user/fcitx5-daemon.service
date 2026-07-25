@@ -1,0 +1,13 @@
+[Unit]
+Description=Fcitx5 input method daemon
+PartOf=hyprland-session.target
+After=hyprland-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/fcitx5
+Restart=on-failure
+TimeoutStopSec=5
+
+[Install]
+WantedBy=hyprland-session.target

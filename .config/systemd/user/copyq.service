@@ -1,0 +1,13 @@
+[Unit]
+Description=CopyQ clipboard manager
+PartOf=hyprland-session.target
+After=hyprland-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/copyq
+Restart=on-failure
+TimeoutStopSec=5
+
+[Install]
+WantedBy=hyprland-session.target

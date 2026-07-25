@@ -1,0 +1,13 @@
+[Unit]
+Description=Hyprpaper wallpaper daemon
+BindsTo=hyprland-session.target
+After=swaync.service
+Wants=swaync.service
+
+[Service]
+ExecStart=/usr/bin/hyprpaper
+Restart=on-failure
+TimeoutStopSec=5
+
+[Install]
+WantedBy=hyprland-session.target

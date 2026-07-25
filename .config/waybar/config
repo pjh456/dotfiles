@@ -1,0 +1,111 @@
+[
+  {
+    "name": "top-bar",
+    "layer": "top",
+    "position": "top",
+    "height": 32,
+    "modules-left": ["custom/weather"],
+    "modules-center": ["clock"],
+    "modules-right": ["pulseaudio", "backlight"],
+
+    "custom/weather": {
+      "exec": "/home/pjh123/.local/bin/weather",
+      "interval": 1800,
+      "tooltip": true
+    },
+    "clock": {
+      "format": "   {:%H:%M  %m/%d (%a)}  ",
+      "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+      "interval": 30
+    },
+    "pulseaudio": {
+      "format": "{icon} {volume}%",
+      "format-muted": "  Muted",
+      "format-icons": {
+        "headphone": "",
+        "default": ["", "", ""]
+      },
+      "on-click": "pavucontrol",
+      "scroll-step": 5
+    },
+    "backlight": {
+      "format": "{icon} {percent}%",
+      "format-icons": ["󰃝", "󰃟", "󰃠"],
+      "on-click": "brightnessctl set 1%-",
+      "on-click-right": "brightnessctl set +1%",
+      "scroll-step": 5
+    }
+  },
+  {
+    "name": "bottom-bar",
+    "layer": "top",
+    "position": "bottom",
+    "height": 30,
+    "modules-left": ["custom/launcher", "hyprland/workspaces"],
+    "modules-center": ["cpu", "memory", "disk", "custom/temperature"],
+    "modules-right": ["network", "bluetooth", "battery", "tray"],
+
+    "hyprland/workspaces": {
+      "disable-scroll": true,
+      "all-outputs": true,
+      "format": "{name}",
+      "on-click": "activate",
+      "persistent_workspaces": { "1": [], "2": [], "3": [], "4": [], "5": [] }
+    },
+    "custom/launcher": {
+      "format": "  Menu",
+      "on-click": "rofi -show drun",
+      "tooltip": false
+    },
+    "network": {
+      "format-wifi": " {essid}",
+      "format-ethernet": "󰈁 Connected",
+      "format-disconnected": "󰤮",
+      "tooltip-format": "{ifname}  IP: {ipaddr}/{cidr}  GW: {gwaddr}",
+      "on-click": "foot nmtui",
+      "interval": 10
+    },
+    "bluetooth": {
+      "format": " {status}",
+      "format-disabled": "",
+      "format-connected": " {device_alias}",
+      "tooltip-format": "{device_alias}",
+      "on-click": "foot bluetoothctl"
+    },
+    "cpu": {
+      "format": " {usage}%",
+      "interval": 5,
+      "on-click": "foot btop"
+    },
+    "memory": {
+      "format": " {}%",
+      "interval": 5,
+      "on-click": "foot btop"
+    },
+    "disk": {
+      "format": " {percentage_used}%",
+      "interval": 30,
+      "on-click": "foot df"
+    },
+    "custom/temperature": {
+      "exec": "/home/pjh123/.local/bin/temperature",
+      "interval": 5,
+      "return-type": "json",
+      "tooltip": true
+    },
+    "battery": {
+      "states": {
+        "warning": 20,
+        "critical": 10
+      },
+      "format": "{icon} {capacity}%",
+      "format-charging": " {capacity}%",
+      "format-plugged": "",
+      "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰁹"],
+      "on-click": "foot btop"
+    },
+    "tray": {
+      "spacing": 8
+    }
+  }
+]

@@ -1,0 +1,9 @@
+[Unit]
+Description=Watch TLP profile changes via D-Bus and switch mpv config
+
+[Service]
+ExecStart=%h/.local/bin/mpv-profile-watch
+Restart=always
+
+[Install]
+WantedBy=default.target

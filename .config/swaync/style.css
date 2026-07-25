@@ -1,0 +1,285 @@
+* {
+  font-family: "JetBrainsMono Nerd Font", monospace;
+  font-size: 13px;
+}
+
+.floating-notifications {
+  margin: 8px 12px 0 0;
+}
+
+.notification-row {
+  outline: none;
+  margin: 0;
+  padding: 0;
+}
+
+.notification-row:focus,
+.notification-row:hover {
+  background: transparent;
+}
+
+.notification {
+  border-radius: 12px;
+  border: none;
+  background: rgba(30, 30, 46, 0.98);
+  padding: 0;
+  margin: 6px 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.notification-content {
+  background: transparent;
+  padding: 14px 14px 10px 14px;
+}
+
+.notification-content image {
+  border-radius: 8px;
+}
+
+.close-button {
+  background: rgba(243, 139, 168, 0.15);
+  color: #f38ba8;
+  border: none;
+  border-radius: 6px;
+  padding: 0 8px;
+  margin: 8px 8px 0 0;
+  min-height: 22px;
+  font-size: 12px;
+}
+
+.close-button:hover {
+  background: rgba(243, 139, 168, 0.3);
+}
+
+.notification-default-action {
+  padding: 0;
+  margin: 0;
+  border-radius: 12px;
+  transition: background 0.15s ease;
+}
+
+.notification-default-action:hover {
+  background: rgba(137, 180, 250, 0.08);
+}
+
+.notification-action {
+  background: #313244;
+  border: 1px solid #45475a;
+  border-radius: 6px;
+  color: #cdd6f4;
+  margin: 0 4px;
+  padding: 4px 12px;
+  transition: background 0.15s ease;
+}
+
+.notification-action:hover {
+  background: #45475a;
+}
+
+.notification-default-action .title {
+  color: #cdd6f4;
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.notification-default-action .summary {
+  color: #89b4fa;
+  font-size: 12px;
+}
+
+.notification-default-action .body {
+  color: #a6adc8;
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.notification-group-heading {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #585b70;
+  padding: 4px 8px;
+  letter-spacing: 1px;
+}
+
+.control-center {
+  background: rgba(30, 30, 46, 0.96);
+  border: 1px solid #45475a;
+  border-radius: 12px;
+  padding: 0;
+}
+
+.control-center-list {
+  background: transparent;
+  padding: 8px;
+}
+
+.control-center-list-placeholder {
+  color: #6c7086;
+  padding: 40px;
+}
+
+.blank-window {
+  background: transparent;
+}
+
+.widget-title {
+  color: #cdd6f4;
+  background: #181825;
+  padding: 12px 16px;
+  margin: 0;
+  border-radius: 12px 12px 0 0;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.widget-title button {
+  background: transparent;
+  color: #89b4fa;
+  border: 1px solid #45475a;
+  border-radius: 6px;
+  padding: 4px 12px;
+}
+
+.widget-title button:hover {
+  background: rgba(137, 180, 250, 0.15);
+}
+
+.widget-buttons-grid {
+  padding: 8px 16px;
+  margin: 0;
+  background: transparent;
+}
+
+.widget-buttons-grid > button {
+  background: #313244;
+  color: #cdd6f4;
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 2px;
+  min-width: 48px;
+  min-height: 36px;
+  font-size: 18px;
+}
+
+.widget-buttons-grid > button:hover {
+  background: #45475a;
+}
+
+.widget-buttons-grid > button:checked {
+  background: #89b4fa;
+  color: #1e1e2e;
+}
+
+.widget-volume {
+  background: transparent;
+  padding: 4px 16px;
+  margin: 0;
+}
+
+.widget-volume label {
+  color: #a6e3a1;
+  font-size: 16px;
+  min-width: 28px;
+}
+
+.widget-volume scale trough {
+  background: #313244;
+  border-radius: 8px;
+  min-height: 8px;
+  min-width: 200px;
+}
+
+.widget-volume scale trough highlight {
+  background: #a6e3a1;
+  border-radius: 8px;
+}
+
+.widget-volume scale trough slider {
+  background: #a6e3a1;
+  border-radius: 50%;
+  min-width: 14px;
+  min-height: 14px;
+}
+
+.widget-backlight {
+  background: transparent;
+  padding: 4px 16px;
+  margin: 0;
+}
+
+.widget-backlight label {
+  color: #f9e2af;
+  font-size: 16px;
+  min-width: 28px;
+}
+
+.widget-backlight scale trough {
+  background: #313244;
+  border-radius: 8px;
+  min-height: 8px;
+  min-width: 200px;
+}
+
+.widget-backlight scale trough highlight {
+  background: #f9e2af;
+  border-radius: 8px;
+}
+
+.widget-backlight scale trough slider {
+  background: #f9e2af;
+  border-radius: 50%;
+  min-width: 14px;
+  min-height: 14px;
+}
+
+.widget-mpris {
+  background: transparent;
+  padding: 8px 16px;
+  margin: 0;
+  color: #cdd6f4;
+}
+
+.widget-mpris > box > button {
+  background: #313244;
+  color: #a6e3a1;
+  border: none;
+  border-radius: 50%;
+  min-width: 28px;
+  min-height: 28px;
+  margin: 0 4px;
+  font-size: 16px;
+}
+
+.widget-mpris > box > button:hover {
+  background: #45475a;
+}
+
+.widget-mpris-player {
+  background: #313244;
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin: 4px 0;
+}
+
+.widget-mpris-title {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.widget-mpris-subtitle {
+  color: #a6adc8;
+  font-size: 12px;
+}
+
+tooltip {
+  background: rgba(30, 30, 46, 0.96);
+  border: 1px solid #45475a;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+tooltip label {
+  color: #cdd6f4;
+}
