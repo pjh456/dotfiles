@@ -11,6 +11,8 @@ Services are managed via `systemd --user`:
 - `init.sh` imports Wayland env vars into systemd, then starts `hyprland-session.target`
 - All daemons (`waybar`, `swaync`, `hyprpaper`, `hypridle`, `fcitx5-daemon`, `copyq`) bind to this target via `BindsTo=` / `PartOf=`
 
+Bluetooth: `blueman` provides the GUI manager (`blueman-manager`). The system service `blueman-mechanism.service` must be enabled, while the tray applet (`blueman-applet`) is not used — waybar's bluetooth module handles status display, and clicking it opens `blueman-manager` directly.
+
 This means when Hyprland exits, all services are cleaned up automatically.
 
 ## Installation
@@ -23,7 +25,7 @@ sudo pacman -S hyprland waybar foot rofi hyprswitch swaync
 sudo pacman -S hypridle hyprlock hyprpaper
 sudo pacman -S fcitx5 fcitx5-im fcitx5-chinese-addons
 sudo pacman -S cliphist wl-clipboard grim slurp
-sudo pacman -S copyq
+sudo pacman -S copyq blueman
 sudo pacman -S ttf-jetbrains-mono-nerd noto-fonts-cjk
 sudo pacman -S papirus-icon-theme
 
@@ -52,6 +54,9 @@ cp -r .local/bin/* ~/.local/bin/
 ```bash
 # Reload systemd user daemon
 systemctl --user daemon-reload
+
+# Enable system bluetooth service (one-time, requires sudo)
+sudo systemctl enable --now blueman-mechanism.service
 
 # Enable all session services
 for s in waybar swaync hyprpaper hypridle fcitx5-daemon copyq; do
@@ -82,6 +87,7 @@ On first start, `init.sh` will stop and restart `hyprland-session.target` to pic
 | `Super + F5`          | Reload Hyprland + Waybar                         |
 | `Ctrl + Alt + A`      | Screenshot region (grim + slurp)                 |
 | `Super + F`           | Fullscreen                                       |
+| Waybar Bluetooth icon | Click opens `blueman-manager` GUI (not bluetoothctl) |
 | `Super + 1-5`         | Switch workspace                                 |
 | `Super + Shift + 1-5` | Move window to workspace                         |
 | `Super + R`           | Resize mode (arrow keys to resize)               |
