@@ -25,7 +25,7 @@ This means when Hyprland exits, all services are cleaned up automatically.
 Tested on Arch / CachyOS and Debian (testing).
 
 ```bash
-git clone https://github.com/pjh456/hyprland-conf ~/dotfiles
+git clone https://github.com/pjh456/dotfiles ~/dotfiles
 ~/dotfiles/install.sh --packages
 ```
 

@@ -24,7 +24,7 @@
 已在 Arch / CachyOS 和 Debian（testing）上验证。
 
 ```bash
-git clone https://github.com/pjh456/hyprland-conf ~/dotfiles
+git clone https://github.com/pjh456/dotfiles ~/dotfiles
 ~/dotfiles/install.sh --packages
 ```
 
