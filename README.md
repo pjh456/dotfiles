@@ -1,5 +1,7 @@
 # Hyprland Dotfiles
 
+English | [中文文档](docs/README-zh.md)
+
 My personal Arch dotfiles: Hyprland setup with systemd user service
 management, plus shell and editor-adjacent configs.
 
@@ -119,6 +121,8 @@ sudoers rule.
 
 ```
 ├── install.sh                 # Deploy / restore entrypoint
+├── docs/
+│   └── README-zh.md           # Chinese documentation
 ├── packages/
 │   ├── arch-official.txt      # pacman list (validated by CI)
 │   ├── arch-aur.txt           # AUR list (yay/paru/buttercup)
