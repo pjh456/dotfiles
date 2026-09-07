@@ -15,7 +15,7 @@
       "tooltip": false
     },
     "custom/weather": {
-      "exec": "/home/pjh123/.local/bin/weather",
+      "exec": "$HOME/.local/bin/weather",
       "interval": 1800,
       "tooltip": true
     },
@@ -71,18 +71,18 @@
       "interval": 10
     },
     "custom/bt-toggle": {
-      "exec": "/home/pjh123/.local/bin/bt-toggle status",
+      "exec": "$HOME/.local/bin/bt-toggle status",
       "interval": 5,
       "signal": 1,
       "return-type": "json",
-      "on-click": "/home/pjh123/.local/bin/bt-toggle toggle"
+      "on-click": "$HOME/.local/bin/bt-toggle toggle"
     },
     "custom/power-mode": {
-      "exec": "/home/pjh123/.local/bin/power-mode status",
+      "exec": "$HOME/.local/bin/power-mode status",
       "interval": 30,
       "signal": 1,
       "return-type": "json",
-      "on-click": "/home/pjh123/.local/bin/power-mode next"
+      "on-click": "$HOME/.local/bin/power-mode next"
     },
     "cpu": {
       "format": " {usage}%",
@@ -100,7 +100,7 @@
       "on-click": "foot df"
     },
     "custom/temperature": {
-      "exec": "/home/pjh123/.local/bin/temperature",
+      "exec": "$HOME/.local/bin/temperature",
       "interval": 5,
       "return-type": "json",
       "tooltip": true
