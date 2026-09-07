@@ -1,0 +1,9 @@
+#!/bin/dash
+for supply in /sys/class/power_supply/*; do
+  type=$(cat "$supply/type" 2>/dev/null)
+  online=$(cat "$supply/online" 2>/dev/null)
+  if [ "$type" != "Battery" ] && [ "$online" = "1" ]; then
+    exit 1
+  fi
+done
+exit 0

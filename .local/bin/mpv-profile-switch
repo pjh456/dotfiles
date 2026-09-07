@@ -1,0 +1,10 @@
+#!/bin/dash
+raw=$(tlp-stat -s 2>/dev/null | grep -oP 'TLP profile\s*=\s*\K\S+' || echo "balanced/BAT")
+tlp_profile="${raw%/*}"
+case "$tlp_profile" in
+    PRF|performance)   target="PRF" ;;
+    SAV|save|powersave|power-saver) target="SAV" ;;
+    *)                 target="BAL" ;;
+esac
+ln -sf "$HOME/.config/mpv/mpv.conf.$target" "$HOME/.config/mpv/mpv.conf"
+echo "[mpv-profile] switched to $target"
