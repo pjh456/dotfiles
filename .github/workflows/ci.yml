@@ -25,6 +25,20 @@ jobs:
           python3 -m json.tool etc/.config/waybar/config > /dev/null
           python3 -m json.tool etc/.config/swaync/config.json > /dev/null
 
+  arch-packages:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux/archlinux:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify all official package names resolve
+        run: |
+          set -euo pipefail
+          pacman -Sy --noconfirm
+          grep -vE '^[[:space:]]*(#|$)' packages/arch-official.txt | while read -r p; do
+            pacman -Si "$p" > /dev/null 2>&1 || { echo "UNRESOLVED: $p" >&2; exit 1; }
+          done
+
   install-dry-run:
     runs-on: ubuntu-latest
     steps:

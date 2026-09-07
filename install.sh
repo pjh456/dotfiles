@@ -90,18 +90,13 @@ if [ "$with_packages" -eq 1 ]; then
   . /etc/os-release
   case "$ID" in
     arch)
-      PKGS_OFFICIAL=(
-        hyprland waybar foot rofi swaync
-        hypridle hyprlock hyprpaper
-        fcitx5 fcitx5-chinese-addons fcitx5-gtk
-        cliphist wl-clipboard grim slurp
-        copyq blueman
-        lm_sensors tlp-pd
-        ttf-jetbrains-mono-nerd noto-fonts-cjk
-        papirus-icon-theme
-        tlp pass starship fzf thefuck
-      )
-      PKGS_AUR=(hyprswitch iwgtk catppuccin-gtk-theme-mocha catppuccin-cursors-mocha)
+      load_list() {
+        local file="$REPO_ROOT/$1"
+        [ -f "$file" ] || { echo "error: missing $file" >&2; exit 1; }
+        mapfile -t "$2" < <(grep -vE '^[[:space:]]*(#|$)' "$file")
+      }
+      load_list packages/arch-official.txt PKGS_OFFICIAL
+      load_list packages/arch-aur.txt PKGS_AUR
 
       SUDO=
       [ "$(id -u)" -ne 0 ] && command -v sudo >/dev/null 2>&1 && SUDO=sudo

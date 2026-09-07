@@ -1,0 +1,5 @@
+# AUR packages (installed via yay/paru/buttercup, not covered by CI)
+hyprswitch
+iwgtk
+catppuccin-gtk-theme-mocha
+catppuccin-cursors-mocha
