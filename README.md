@@ -5,6 +5,8 @@ English | [中文文档](docs/README-zh.md)
 My personal Arch dotfiles: Hyprland setup with systemd user service
 management, plus shell and editor-adjacent configs.
 
+![screenshot](docs/screenshot.png)
+
 ## Architecture
 
 Services are managed via `systemd --user`:

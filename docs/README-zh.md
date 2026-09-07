@@ -4,6 +4,8 @@
 
 我的个人 Arch dotfiles：带 systemd 用户服务管理的 Hyprland 配置，外加 shell 及部分编辑器周边配置。
 
+![screenshot](screenshot.png)
+
 ## 架构
 
 所有服务通过 `systemd --user` 管理：
