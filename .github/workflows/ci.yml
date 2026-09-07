@@ -25,34 +25,40 @@ jobs:
           python3 -m json.tool etc/.config/waybar/config > /dev/null
           python3 -m json.tool etc/.config/swaync/config.json > /dev/null
 
-  arch-packages:
+  arch-install:
     runs-on: ubuntu-latest
     container:
       image: archlinux/archlinux:latest
     steps:
       - uses: actions/checkout@v4
-      - name: Verify all official package names resolve
+      - name: Real install via install.sh --packages
         run: |
           set -euo pipefail
           pacman -Sy --noconfirm
-          grep -vE '^[[:space:]]*(#|$)' packages/arch-official.txt | while read -r p; do
-            pacman -Si "$p" > /dev/null 2>&1 || { echo "UNRESOLVED: $p" >&2; exit 1; }
+          out=$(./install.sh --packages --no-systemd --no-sudo --no-uv)
+          echo "$out"
+          # container has no AUR helper: the skip-note path must be exercised
+          echo "$out" | grep -q 'no AUR helper'
+          for p in $(grep -vE '^[[:space:]]*(#|$)' packages/arch-official.txt); do
+            pacman -Qi "$p" > /dev/null
           done
 
-  debian-packages:
+  debian-install:
     runs-on: ubuntu-latest
     container:
       image: debian:testing
     steps:
       - uses: actions/checkout@v4
-      - name: Verify all package names resolve (simulated install)
+      - name: Real install via install.sh --packages
         run: |
           set -euo pipefail
-          apt-get update -qq
-          pkgs=$(grep -vE '^[[:space:]]*(#|$)' packages/debian.txt | paste -sd' ')
-          apt-get -s install --no-install-recommends $pkgs > /tmp/apt-sim.log 2>&1 \
-            || { tail -20 /tmp/apt-sim.log >&2; exit 1; }
-          grep -E '^[0-9]+ upgraded' /tmp/apt-sim.log
+          out=$(./install.sh --packages --no-systemd --no-sudo --no-uv)
+          echo "$out"
+          # manual-build list must be surfaced
+          echo "$out" | grep -q 'no Debian packages for: hypridle hyprlock hyprpaper hyprswitch swaync fonts-jetbrains-mono-nerd'
+          for p in $(grep -vE '^[[:space:]]*(#|$)' packages/debian.txt); do
+            dpkg -s "$p" > /dev/null
+          done
 
   install-dry-run:
     runs-on: ubuntu-latest
