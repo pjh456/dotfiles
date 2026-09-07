@@ -11,6 +11,8 @@ with_systemd=1
 with_sudo=1
 with_uv=1
 with_packages=0
+with_restore=0
+restore_dir=
 
 usage() {
   cat <<EOF
@@ -21,26 +23,67 @@ services, install uv tools, and set up the on-demand bluetooth sudoers
 rule. Idempotent: safe to re-run.
 
 Options:
-  --packages    also install required packages (arch only for now)
-  --no-systemd  skip daemon-reload / service enabling
-  --no-sudo     skip the bluetooth sudoers rule
-  --no-uv       skip uv tool installs
-  -h, --help    show this help
+  --packages          also install required packages (arch only for now)
+  --restore [DIR]     undo a deployment: remove repo symlinks and restore
+                      files from DIR (default: newest ~/.dotfiles-backup-*)
+  --no-systemd        skip daemon-reload / service enabling
+  --no-sudo           skip the bluetooth sudoers rule
+  --no-uv             skip uv tool installs
+  -h, --help          show this help
 EOF
 }
 
-for arg in "$@"; do
-  case "$arg" in
-    --packages) with_packages=1 ;;
-    --no-systemd) with_systemd=0 ;;
-    --no-sudo) with_sudo=0 ;;
-    --no-uv) with_uv=0 ;;
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --packages) with_packages=1; shift ;;
+    --restore)
+      with_restore=1
+      shift
+      if [ $# -gt 0 ] && [ -d "$1" ]; then restore_dir="$1"; shift; fi
+      ;;
+    --no-systemd) with_systemd=0; shift ;;
+    --no-sudo) with_sudo=0; shift ;;
+    --no-uv) with_uv=0; shift ;;
     -h | --help) usage; exit 0 ;;
-    *) echo "error: unknown option: $arg" >&2; usage; exit 1 ;;
+    *) echo "error: unknown option: $1" >&2; usage; exit 1 ;;
   esac
 done
 
 [ -d "$ETC" ] || { echo "error: $ETC not found (run from a clone of this repo)" >&2; exit 1; }
+
+# --- R. restore: undo a previous deployment --------------------------------
+if [ "$with_restore" -eq 1 ]; then
+  if [ -z "$restore_dir" ]; then
+    restore_dir=$(ls -1d "$HOME"/.dotfiles-backup-* 2>/dev/null | sort | tail -1)
+  fi
+  [ -n "$restore_dir" ] && [ -d "$restore_dir" ] || {
+    echo "error: backup dir not found: ${restore_dir:-<none>}" >&2; exit 1;
+  }
+
+  restored=0 removed=0 skipped=0
+  while IFS= read -r -d '' f; do
+    rel="${f#"$ETC"/}"
+    target="$HOME/$rel"
+    if [ -L "$target" ] && [ "$(readlink -f "$target")" = "$(readlink -f "$f")" ]; then
+      if [ -e "$restore_dir/$rel" ]; then
+        rm "$target"
+        mkdir -p "$HOME/$(dirname "$rel")"
+        mv "$restore_dir/$rel" "$target"
+        restored=$((restored + 1))
+      else
+        rm "$target"
+        removed=$((removed + 1))
+      fi
+    else
+      skipped=$((skipped + 1))
+      echo "skipped (not our symlink): $target" >&2
+    fi
+  done < <(find "$ETC" -type f -print0)
+
+  echo "restore from $restore_dir: $restored file(s) restored, $removed link(s) removed, $skipped skipped"
+  echo "note: systemd enabling, uv tools and the sudoers rule are not rolled back"
+  exit 0
+fi
 
 # --- 0. optional: install required packages --------------------------------
 if [ "$with_packages" -eq 1 ]; then
