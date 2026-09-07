@@ -4,7 +4,14 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ETC="$REPO_ROOT/etc"
 
-SERVICES=(waybar swaync hyprpaper hypridle fcitx5-daemon copyq)
+SERVICES=(
+  waybar:waybar
+  swaync:swaync
+  hyprpaper:hyprpaper
+  hypridle:hypridle
+  fcitx5-daemon:fcitx5
+  copyq:copyq
+)
 UV_TOOLS=(hyprconf2lua ruff zhihu-tui)
 
 with_systemd=1
@@ -246,10 +253,16 @@ echo "deployed $(wc -l < "$manifest_file") file(s) into \$HOME (copies; manifest
 if [ "$with_systemd" -eq 1 ] && command -v systemctl >/dev/null 2>&1; then
   if systemctl --user daemon-reload 2>/dev/null; then
     for s in "${SERVICES[@]}"; do
-      if systemctl --user enable "$s".service 2>/dev/null; then
-        echo "enabled $s.service"
+      unit="${s%%:*}"
+      bin="${s##*:}"
+      if ! command -v "$bin" >/dev/null 2>&1; then
+        echo "skipped $unit.service ($bin not installed)"
+        continue
+      fi
+      if systemctl --user enable "$unit".service 2>/dev/null; then
+        echo "enabled $unit.service"
       else
-        echo "skipped $s.service (unit missing?)"
+        echo "skipped $unit.service (unit missing?)"
       fi
     done
   else
