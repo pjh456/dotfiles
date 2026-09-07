@@ -18,14 +18,15 @@ usage() {
   cat <<EOF
 Usage: $(basename "$0") [options]
 
-Deploy dotfiles from etc/ into \$HOME as symlinks, enable systemd user
-services, install uv tools, and set up the on-demand bluetooth sudoers
-rule. Idempotent: safe to re-run.
+Deploy dotfiles from etc/ into \$HOME as regular file copies, enable
+systemd user services, install uv tools, and set up the on-demand
+bluetooth sudoers rule. Idempotent: safe to re-run.
 
 Options:
   --packages          also install required packages (arch, debian)
-  --restore [DIR]     undo a deployment: remove repo symlinks and restore
-                      files from DIR (default: newest ~/.dotfiles-backup-*)
+  --restore [DIR]     undo a deployment: remove deployed files and restore
+                      backed-up originals from DIR (default: newest
+                      ~/.dotfiles-backup-*)
   --no-systemd        skip daemon-reload / service enabling
   --no-sudo           skip the bluetooth sudoers rule
   --no-uv             skip uv tool installs
@@ -52,6 +53,8 @@ done
 [ -d "$ETC" ] || { echo "error: $ETC not found (run from a clone of this repo)" >&2; exit 1; }
 
 # --- R. restore: undo a previous deployment --------------------------------
+manifest_file="$HOME/.dotfiles-deployed"
+
 if [ "$with_restore" -eq 1 ]; then
   if [ -z "$restore_dir" ]; then
     restore_dir=$(ls -1d "$HOME"/.dotfiles-backup-* 2>/dev/null | sort | tail -1)
@@ -60,27 +63,36 @@ if [ "$with_restore" -eq 1 ]; then
     echo "error: backup dir not found: ${restore_dir:-<none>}" >&2; exit 1;
   }
 
-  restored=0 removed=0 skipped=0
-  while IFS= read -r -d '' f; do
-    rel="${f#"$ETC"/}"
-    target="$HOME/$rel"
-    if [ -L "$target" ] && [ "$(readlink -f "$target")" = "$(readlink -f "$f")" ]; then
-      if [ -e "$restore_dir/$rel" ]; then
-        rm "$target"
-        mkdir -p "$HOME/$(dirname "$rel")"
-        mv "$restore_dir/$rel" "$target"
-        restored=$((restored + 1))
-      else
-        rm "$target"
-        removed=$((removed + 1))
-      fi
-    else
-      skipped=$((skipped + 1))
-      echo "skipped (not our symlink): $target" >&2
+  restore_one() {
+    local src="$1" target
+    target="$HOME/${src#"$restore_dir"/}"
+    if [ -e "$target" ]; then
+      rm -f "$target"
     fi
-  done < <(find "$ETC" -type f -print0)
+    mkdir -p "$(dirname "$target")"
+    mv "$src" "$target"
+    RESTORED=$((RESTORED + 1))
+  }
 
-  echo "restore from $restore_dir: $restored file(s) restored, $removed link(s) removed, $skipped skipped"
+  RESTORED=0
+  if [ -f "$manifest_file" ]; then
+    while IFS= read -r rel; do
+      [ -n "$rel" ] || continue
+      if [ -e "$restore_dir/$rel" ]; then
+        restore_one "$restore_dir/$rel"
+      elif [ -e "$HOME/$rel" ]; then
+        rm -f "$HOME/$rel"
+      fi
+    done < "$manifest_file"
+  else
+    echo "warning: no manifest ($manifest_file), restoring everything in the backup" >&2
+    while IFS= read -r -d '' b; do
+      restore_one "$b"
+    done < <(find "$restore_dir" -type f -print0)
+  fi
+
+  rm -f "$manifest_file"
+  echo "restored $RESTORED file(s) from $restore_dir (deployed files removed)"
   echo "note: systemd enabling, uv tools and the sudoers rule are not rolled back"
   exit 0
 fi
@@ -138,20 +150,23 @@ if [ "$with_packages" -eq 1 ]; then
   esac
 fi
 
-# --- 1. collect conflicts, back them up, then symlink everything ----------
+# --- 1. back up real conflicts, then copy everything from etc/ -------------
+in_manifest() {
+  [ -f "$manifest_file" ] && grep -qxF "$1" "$manifest_file"
+}
+
 backup_dir="$HOME/.dotfiles-backup-$(date +%Y%m%d-%H%M%S)"
 to_backup=()
 
+# pass 1: clear symlink-era artifacts, collect real conflicts for backup
 while IFS= read -r -d '' f; do
   rel="${f#"$ETC"/}"
   target="$HOME/$rel"
-  if [ -L "$target" ]; then
-    # already our symlink -> idempotent no-op
-    [ "$(readlink -f "$target")" = "$(readlink -f "$f")" ] && continue
-  elif [ ! -e "$target" ]; then
-    continue
+  if [ -L "$target" ] && [ "$(readlink -f "$target")" = "$(readlink -f "$f")" ]; then
+    rm "$target"
+  elif [ -e "$target" ] && { ! in_manifest "$rel" || ! cmp -s "$f" "$target"; }; then
+    to_backup+=("$target")
   fi
-  to_backup+=("$target")
 done < <(find "$ETC" -type f -print0)
 
 if [ "${#to_backup[@]}" -gt 0 ]; then
@@ -164,12 +179,18 @@ if [ "${#to_backup[@]}" -gt 0 ]; then
   echo "backed up ${#to_backup[@]} existing file(s) -> $backup_dir"
 fi
 
+# pass 2: copy (skip files already up to date from a previous deployment)
 while IFS= read -r -d '' f; do
   rel="${f#"$ETC"/}"
+  if [ -e "$HOME/$rel" ] && in_manifest "$rel" && cmp -s "$f" "$HOME/$rel"; then
+    continue
+  fi
   mkdir -p "$HOME/$(dirname "$rel")"
-  ln -sfn "$f" "$HOME/$rel"
+  cp -a "$f" "$HOME/$rel"
 done < <(find "$ETC" -type f -print0)
-echo "symlinked $(find "$ETC" -type f | wc -l) file(s) into \$HOME"
+
+find "$ETC" -type f | sed "s|$ETC/||" > "$manifest_file"
+echo "deployed $(wc -l < "$manifest_file") file(s) into \$HOME (copies; manifest: $manifest_file)"
 
 # --- 2. systemd user services ---------------------------------------------
 if [ "$with_systemd" -eq 1 ] && command -v systemctl >/dev/null 2>&1; then
