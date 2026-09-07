@@ -6,8 +6,14 @@
     "height": 32,
     "modules-left": ["custom/weather"],
     "modules-center": ["clock"],
-    "modules-right": ["pulseaudio", "backlight"],
+    "modules-right": ["pulseaudio", "backlight", "custom/uptime"],
 
+    "custom/uptime": {
+      "format": " {}",
+      "exec": "uptime -p | sed 's/^up //'",
+      "interval": 60,
+      "tooltip": false
+    },
     "custom/weather": {
       "exec": "/home/pjh123/.local/bin/weather",
       "interval": 1800,
@@ -32,8 +38,7 @@
       "format": "{icon} {percent}%",
       "format-icons": ["󰃝", "󰃟", "󰃠"],
       "on-click": "brightnessctl set 1%-",
-      "on-click-right": "brightnessctl set +1%",
-      "scroll-step": 5
+      "on-click-right": "brightnessctl set +1%"
     }
   },
   {
@@ -43,7 +48,7 @@
     "height": 30,
     "modules-left": ["custom/launcher", "hyprland/workspaces"],
     "modules-center": ["cpu", "memory", "disk", "custom/temperature"],
-    "modules-right": ["network", "bluetooth", "battery", "tray"],
+    "modules-right": ["network", "custom/bt-toggle", "custom/power-mode", "battery", "tray"],
 
     "hyprland/workspaces": {
       "disable-scroll": true,
@@ -62,15 +67,22 @@
       "format-ethernet": "󰈁 Connected",
       "format-disconnected": "󰤮",
       "tooltip-format": "{ifname}  IP: {ipaddr}/{cidr}  GW: {gwaddr}",
-      "on-click": "foot nmtui",
+      "on-click": "iwgtk",
       "interval": 10
     },
-    "bluetooth": {
-      "format": " {status}",
-      "format-disabled": "",
-      "format-connected": " {device_alias}",
-      "tooltip-format": "{device_alias}",
-      "on-click": "blueman-manager"
+    "custom/bt-toggle": {
+      "exec": "/home/pjh123/.local/bin/bt-toggle status",
+      "interval": 5,
+      "signal": 1,
+      "return-type": "json",
+      "on-click": "/home/pjh123/.local/bin/bt-toggle toggle"
+    },
+    "custom/power-mode": {
+      "exec": "/home/pjh123/.local/bin/power-mode status",
+      "interval": 30,
+      "signal": 1,
+      "return-type": "json",
+      "on-click": "/home/pjh123/.local/bin/power-mode next"
     },
     "cpu": {
       "format": " {usage}%",

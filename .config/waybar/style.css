@@ -78,6 +78,30 @@ window#waybar {
   padding: 0 10px;
 }
 
+#custom-uptime {
+  color: #6c7086;
+  padding: 0 10px;
+  border-left: 1px solid rgba(69, 71, 90, 0.6);
+  font-size: 12px;
+}
+
+#custom-power-mode {
+  padding: 0 10px;
+  border-left: 1px solid rgba(69, 71, 90, 0.6);
+}
+
+#custom-power-mode.power-saver {
+  color: #74c7ec;
+}
+
+#custom-power-mode.balanced {
+  color: #a6e3a1;
+}
+
+#custom-power-mode.performance {
+  color: #f38ba8;
+}
+
 #network {
   color: #a6e3a1;
   padding: 0 10px;
@@ -85,6 +109,24 @@ window#waybar {
 
 #network.disconnected {
   color: #f38ba8;
+}
+
+#custom-bt-toggle {
+  color: #89b4fa;
+  padding: 0 10px;
+  border-left: 1px solid rgba(69, 71, 90, 0.6);
+}
+
+#custom-bt-toggle.off {
+  color: #6c7086;
+}
+
+#custom-bt-toggle.on {
+  color: #89b4fa;
+}
+
+#custom-bt-toggle.connected {
+  color: #a6e3a1;
 }
 
 #bluetooth {
@@ -210,7 +252,7 @@ tooltip label {
   color: #cdd6f4;
 }
 
-#waybar.bottom-bar #custom-weather {
+#waybar.top-bar #custom-weather {
   font-size: 16px;
   color: #cba6f7;
   padding: 0 10px;
