@@ -32,8 +32,8 @@ git clone https://github.com/pjh456/dotfiles ~/dotfiles
 
 - `--packages`：安装所需软件包——官方源走 `pacman`，若检测到 `yay`/`paru`/`buttercup` 则 AUR 走它们。清单位于
   [`packages/`](../packages/)，由 CI 对着实时 Arch 数据库校验。
-- 把已存在的 dotfiles 备份到 `~/.dotfiles-backup-<时间戳>/`，然后把
-  `etc/` 里的全部内容以符号链接方式放进 `$HOME`。
+- 把已存在的 dotfiles 备份到 `~/.dotfiles-backup-<时间戳>/`，然后以
+  普通文件拷贝的方式把 `etc/` 里的全部内容放进 `$HOME`。
 - 启用会话服务（`systemctl --user`）、安装 uv 工具
   （`hyprconf2lua`、`ruff`、`zhihu-tui`）、写入按需蓝牙的 NOPASSWD
   sudoers 规则。
@@ -80,9 +80,10 @@ start-hyprland
 
 ## 日常使用
 
-`$HOME` 下的每个 dotfile 都是指向 `etc/` 的符号链接，所以编辑实际文件
-（`vim ~/.bashrc`）就是在直接编辑仓库——`git diff` / `git commit`
-照常使用。
+仓库的 `etc/` 是唯一事实来源，`$HOME` 里是普通文件拷贝。修改配置时编辑
+仓库里的文件，然后重跑 `~/dotfiles/install.sh` 应用——未变化的文件不动，
+变化过的重新拷贝。直接改 `$HOME` 里的文件不会进仓库，想保留的话先拷回
+`etc/` 再提交。
 
 ## 回滚
 
@@ -91,8 +92,8 @@ start-hyprland
 ~/dotfiles/install.sh --restore <dir>      # 或指定 ~/.dotfiles-backup-*/
 ```
 
-删除指向仓库的符号链接，并把备份的原始文件还原。不会回滚的部分：systemd
-服务启用、uv 工具、sudoers 规则。
+删除已部署的文件（按 `~/.dotfiles-deployed` 清单），并把备份的原始文件
+还原。不会回滚的部分：systemd 服务启用、uv 工具、sudoers 规则。
 
 ## 快捷键
 
@@ -125,7 +126,7 @@ start-hyprland
 │   ├── arch-aur.txt           # AUR 清单（yay/paru/buttercup）
 │   ├── debian.txt             # apt 清单（CI 校验）
 │   └── debian-manual.txt      # Debian 手动编译清单
-├── etc/                       # $HOME 的 1:1 镜像，以符号链接方式就位
+├── etc/                       # $HOME 的 1:1 镜像（install.sh 拷贝就位）
 │   ├── .bashrc                # 别名、starship、fzf、thefuck
 │   ├── .bash_profile
 │   ├── .gitconfig

@@ -36,7 +36,7 @@ What `install.sh` does:
   [`packages/`](packages/) and are validated by CI against the live Arch
   databases.
 - Backs up any existing dotfiles to `~/.dotfiles-backup-<timestamp>/`, then
-  symlinks everything from `etc/` into `$HOME`.
+  copies everything from `etc/` into `$HOME` as regular files.
 - Enables the session services (`systemctl --user`), installs uv tools
   (`hyprconf2lua`, `ruff`, `zhihu-tui`), and writes the NOPASSWD sudoers
   rule for on-demand bluetooth.
@@ -84,9 +84,11 @@ On first start, `init.sh` will stop and restart `hyprland-session.target` to pic
 
 ## Day-to-day
 
-Every dotfile in `$HOME` is a symlink into `etc/`, so editing a live file
-(`vim ~/.bashrc`) edits the repo directly — `git diff` / `git commit` works
-as usual.
+The repo's `etc/` is the source of truth; `$HOME` holds regular copies.
+Edit files in the repo, then re-run `~/dotfiles/install.sh` to apply —
+up-to-date files are left alone, changed ones are re-copied. Edits made
+directly in `$HOME` do not reach the repo; copy them back into `etc/`
+before committing if you want to keep them.
 
 ## Rollback
 
@@ -95,9 +97,9 @@ as usual.
 ~/dotfiles/install.sh --restore <dir>      # or a specific ~/.dotfiles-backup-*/
 ```
 
-Removes the symlinks pointing into the repo and restores the backed-up
-originals. Not rolled back: systemd service enabling, uv tools, the
-sudoers rule.
+Removes the deployed files (tracked in `~/.dotfiles-deployed`) and
+restores the backed-up originals. Not rolled back: systemd service
+enabling, uv tools, the sudoers rule.
 
 ## Keybindings
 
@@ -130,7 +132,7 @@ sudoers rule.
 │   ├── arch-aur.txt           # AUR list (yay/paru/buttercup)
 │   ├── debian.txt             # apt list (validated by CI)
 │   └── debian-manual.txt      # Debian manual-build list
-├── etc/                       # 1:1 mirror of $HOME, symlinked in place
+├── etc/                       # 1:1 mirror of $HOME (copied into place by install.sh)
 │   ├── .bashrc                # Aliases, starship, fzf, thefuck
 │   ├── .bash_profile
 │   ├── .gitconfig
