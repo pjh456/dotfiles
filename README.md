@@ -18,7 +18,7 @@ This means when Hyprland exits, all services are cleaned up automatically.
 
 ## Installation
 
-Tested on Arch / CachyOS.
+Tested on Arch / CachyOS and Debian (testing).
 
 ```bash
 git clone https://github.com/pjh456/hyprland-conf ~/dotfiles
@@ -42,6 +42,33 @@ them at shell startup): `snyk/token`, `huggingface/token`.
 
 Flags: `--no-systemd`, `--no-sudo`, `--no-uv` skip the respective steps.
 The script is idempotent — re-running it is safe.
+
+### Debian notes
+
+On Debian, `--packages` installs [`packages/debian.txt`](packages/debian.txt)
+via `apt` and prints the packages that need a manual build. Debian stable
+(trixie) predates hyprland in main — use testing, or stable with
+trixie-backports. Two specifics:
+
+- `tlp` conflicts with `power-profiles-daemon`. The `power-mode` waybar
+  module needs the `net.hadess.PowerProfiles` D-Bus interface, which tlp
+  1.10 provides built-in — enable it with `TLP_PD_ENABLE=1` in
+  `/etc/tlp.conf`.
+- Arch's `fcitx5-gtk` is `fcitx5-frontend-gtk3` / `fcitx5-frontend-gtk4`
+  on Debian.
+
+#### Manual builds (Debian)
+
+No Debian package exists for these; build from source:
+
+| Package                        | Source                                                        |
+| ------------------------------ | ------------------------------------------------------------- |
+| hypridle                       | https://github.com/hyprwm/hypridle                            |
+| hyprlock                        | https://github.com/hyprwm/hyprlock                            |
+| hyprpaper                       | https://github.com/hyprwm/hyprpaper                           |
+| hyprswitch                      | https://github.com/hyprwm/hyprswitch                          |
+| swaync                          | https://github.com/elkowar/swaync                             |
+| fonts-jetbrains-mono-nerd       | https://github.com/nerd-fonts/nerd-fonts (install script)     |
 
 Then start Hyprland:
 
@@ -94,7 +121,9 @@ sudoers rule.
 ├── install.sh                 # Deploy / restore entrypoint
 ├── packages/
 │   ├── arch-official.txt      # pacman list (validated by CI)
-│   └── arch-aur.txt           # AUR list (yay/paru/buttercup)
+│   ├── arch-aur.txt           # AUR list (yay/paru/buttercup)
+│   ├── debian.txt             # apt list (validated by CI)
+│   └── debian-manual.txt      # Debian manual-build list
 ├── etc/                       # 1:1 mirror of $HOME, symlinked in place
 │   ├── .bashrc                # Aliases, starship, fzf, thefuck
 │   ├── .bash_profile
