@@ -1,6 +1,7 @@
 # Hyprland Dotfiles
 
-My personal Hyprland configuration with systemd user service management.
+My personal Arch dotfiles: Hyprland setup with systemd user service
+management, plus shell and editor-adjacent configs.
 
 ## Architecture
 
@@ -11,72 +12,61 @@ Services are managed via `systemd --user`:
 - `init.sh` imports Wayland env vars into systemd, then starts `hyprland-session.target`
 - All daemons (`waybar`, `swaync`, `hyprpaper`, `hypridle`, `fcitx5-daemon`, `copyq`) bind to this target via `BindsTo=` / `PartOf=`
 
-Bluetooth is **on-demand** to save battery: `bluetooth.service` and the radio are off when idle. The waybar `bt-toggle` custom module shows the current state, and clicking it starts `bluetooth.service` (via passwordless sudo, see installation), powers the adapter on, and opens `blueman-manager`. The tray applet (`blueman-applet`) is not used.
+Bluetooth is **on-demand** to save battery: `bluetooth.service` and the radio are off when idle. The waybar `bt-toggle` custom module shows the current state, and clicking it starts `bluetooth.service` (via the passwordless sudoers rule that `install.sh` sets up), powers the adapter on, and opens `blueman-manager`. The tray applet (`blueman-applet`) is not used.
 
 This means when Hyprland exits, all services are cleaned up automatically.
 
 ## Installation
 
-### 1. Install packages
+Tested on Arch / CachyOS.
 
 ```bash
-# Core
-sudo pacman -S hyprland waybar foot rofi swaync
-sudo pacman -S hypridle hyprlock hyprpaper
-sudo pacman -S fcitx5 fcitx5-chinese-addons fcitx5-gtk
-sudo pacman -S cliphist wl-clipboard grim slurp
-sudo pacman -S copyq blueman
-sudo pacman -S lm_sensors tlp-pd
-sudo pacman -S ttf-jetbrains-mono-nerd noto-fonts-cjk
-sudo pacman -S papirus-icon-theme
-
-# Shell (bashrc + mpv/tlp scripts)
-sudo pacman -S tlp pass starship fzf thefuck
-
-# AUR (use your preferred AUR helper, e.g. yay)
-yay -S hyprswitch iwgtk catppuccin-gtk-theme-mocha catppuccin-cursors-mocha
+git clone https://github.com/pjh456/hyprland-conf ~/dotfiles
+~/dotfiles/install.sh --packages
 ```
 
-### 2. Clone and deploy
+What `install.sh` does:
 
-```bash
-git clone https://github.com/pjh456/hyprland-conf ~/hyprland-dotfiles
-cd ~/hyprland-dotfiles
+- `--packages`: installs required packages — official repos via `pacman`,
+  AUR via your `yay`/`paru`/`buttercup` if one is present. Lists live in
+  [`packages/`](packages/) and are validated by CI against the live Arch
+  databases.
+- Backs up any existing dotfiles to `~/.dotfiles-backup-<timestamp>/`, then
+  symlinks everything from `etc/` into `$HOME`.
+- Enables the session services (`systemctl --user`), installs uv tools
+  (`hyprconf2lua`, `ruff`, `zhihu-tui`), and writes the NOPASSWD sudoers
+  rule for on-demand bluetooth.
 
-# Back up your existing configs first!
-cp -r ~/.config/hypr ~/.config/hypr.bak
-cp -r ~/.config/waybar ~/.config/waybar.bak
-# ... etc
+Before the first run, make sure these `pass` entries exist (`.bashrc` reads
+them at shell startup): `snyk/token`, `huggingface/token`.
 
-# Deploy
-cp -r .config/* ~/.config/
-cp -r .local/bin/* ~/.local/bin/
-```
+Flags: `--no-systemd`, `--no-sudo`, `--no-uv` skip the respective steps.
+The script is idempotent — re-running it is safe.
 
-### 3. Enable systemd user services
-
-```bash
-# Reload systemd user daemon
-systemctl --user daemon-reload
-
-# Passwordless start/stop of bluetooth.service so the waybar click works without a
-# sudo prompt (one-time, requires sudo; adjust the username)
-echo 'pjh123 ALL=(ALL) NOPASSWD: /usr/bin/systemctl start bluetooth.service, /usr/bin/systemctl stop bluetooth.service' \
-  | sudo tee /etc/sudoers.d/bluetooth-ondemand
-
-# Enable all session services
-for s in waybar swaync hyprpaper hypridle fcitx5-daemon copyq; do
-  systemctl --user enable "$s"
-done
-```
-
-### 4. Start Hyprland
+Then start Hyprland:
 
 ```bash
 start-hyprland
 ```
 
 On first start, `init.sh` will stop and restart `hyprland-session.target` to pick up all services. On subsequent starts it only starts individual services that aren't running.
+
+## Day-to-day
+
+Every dotfile in `$HOME` is a symlink into `etc/`, so editing a live file
+(`vim ~/.bashrc`) edits the repo directly — `git diff` / `git commit` works
+as usual.
+
+## Rollback
+
+```bash
+~/dotfiles/install.sh --restore            # from the newest backup
+~/dotfiles/install.sh --restore <dir>      # or a specific ~/.dotfiles-backup-*/
+```
+
+Removes the symlinks pointing into the repo and restores the backed-up
+originals. Not rolled back: systemd service enabling, uv tools, the
+sudoers rule.
 
 ## Keybindings
 
@@ -101,34 +91,24 @@ On first start, `init.sh` will stop and restart `hyprland-session.target` to pic
 ## File Structure
 
 ```
-.config/
-├── hypr/
-│   ├── hyprland.conf      # Main Hyprland config
-│   ├── hypridle.conf       # Idle management
-│   ├── hyprlock.conf       # Lock screen
-│   ├── hyprpaper.conf      # Wallpaper
-│   └── scripts/
-│       └── init.sh         # Session init (systemd service orchestration)
-├── systemd/user/
-│   ├── hyprland-session.target      # Session lifecycle target
-│   ├── waybar.service
-│   ├── swaync.service
-│   ├── hyprpaper.service
-│   ├── hypridle.service
-│   ├── fcitx5-daemon.service
-│   ├── copyq.service
-│   └── mpv-profile-watch.service
-│   └── *.target.wants/             # NOT tracked — run systemctl --user enable to create
-├── waybar/                 # Status bar config & style
-├── rofi/                   # Launcher config
-├── swaync/                 # Notification center config & style
-├── fcitx5/                 # Input method config
-└── foot/                   # Terminal config
-.local/bin/
-├── powermenu              # Power menu script
-├── bt-toggle              # On-demand bluetooth toggle (waybar module)
-├── power-mode             # Power-profiles-daemon mode switcher (waybar module)
-├── temperature            # CPU temperature (waybar module, lm-sensors)
-├── weather                # wttr.in one-line weather (waybar module)
-└── mpv-profile-watch      # TLP profile -> mpv config watcher (systemd user service)
+├── install.sh                 # Deploy / restore entrypoint
+├── packages/
+│   ├── arch-official.txt      # pacman list (validated by CI)
+│   └── arch-aur.txt           # AUR list (yay/paru/buttercup)
+├── etc/                       # 1:1 mirror of $HOME, symlinked in place
+│   ├── .bashrc                # Aliases, starship, fzf, thefuck
+│   ├── .bash_profile
+│   ├── .gitconfig
+│   ├── .config/
+│   │   ├── hypr/              # hyprland.conf, hypridle, hyprlock, hyprpaper, scripts/init.sh
+│   │   ├── waybar/            # Status bar config & style
+│   │   ├── rofi/               # Launcher config
+│   │   ├── swaync/             # Notification center config & style
+│   │   ├── fcitx5/             # Input method config
+│   │   ├── foot/               # Terminal config
+│   │   └── systemd/user/       # Session services (*.wants/ not tracked)
+│   └── .local/bin/            # powermenu, bt-toggle, power-mode, temperature,
+│                             # weather, clipmenu, setwp, waybar-reload,
+│                             # mpv-profile-{watch,switch}, on-battery, ...
+└── .github/workflows/ci.yml   # shellcheck, JSON check, package resolution, dry-run
 ```
