@@ -11,7 +11,7 @@ Services are managed via `systemd --user`:
 - `init.sh` imports Wayland env vars into systemd, then starts `hyprland-session.target`
 - All daemons (`waybar`, `swaync`, `hyprpaper`, `hypridle`, `fcitx5-daemon`, `copyq`) bind to this target via `BindsTo=` / `PartOf=`
 
-Bluetooth: `blueman` provides the GUI manager (`blueman-manager`). The system service `blueman-mechanism.service` must be enabled, while the tray applet (`blueman-applet`) is not used — waybar's bluetooth module handles status display, and clicking it opens `blueman-manager` directly.
+Bluetooth is **on-demand** to save battery: `bluetooth.service` and the radio are off when idle. The waybar `bt-toggle` custom module shows the current state, and clicking it starts `bluetooth.service` (via passwordless sudo, see installation), powers the adapter on, and opens `blueman-manager`. The tray applet (`blueman-applet`) is not used.
 
 This means when Hyprland exits, all services are cleaned up automatically.
 
@@ -26,6 +26,7 @@ sudo pacman -S hypridle hyprlock hyprpaper
 sudo pacman -S fcitx5 fcitx5-im fcitx5-chinese-addons
 sudo pacman -S cliphist wl-clipboard grim slurp
 sudo pacman -S copyq blueman
+sudo pacman -S lm-sensors power-profiles-daemon iwgtk
 sudo pacman -S ttf-jetbrains-mono-nerd noto-fonts-cjk
 sudo pacman -S papirus-icon-theme
 
@@ -55,8 +56,10 @@ cp -r .local/bin/* ~/.local/bin/
 # Reload systemd user daemon
 systemctl --user daemon-reload
 
-# Enable system bluetooth service (one-time, requires sudo)
-sudo systemctl enable --now blueman-mechanism.service
+# Passwordless start/stop of bluetooth.service so the waybar click works without a
+# sudo prompt (one-time, requires sudo; adjust the username)
+echo 'pjh123 ALL=(ALL) NOPASSWD: /usr/bin/systemctl start bluetooth.service, /usr/bin/systemctl stop bluetooth.service' \
+  | sudo tee /etc/sudoers.d/bluetooth-ondemand
 
 # Enable all session services
 for s in waybar swaync hyprpaper hypridle fcitx5-daemon copyq; do
@@ -87,7 +90,7 @@ On first start, `init.sh` will stop and restart `hyprland-session.target` to pic
 | `Super + F5`          | Reload Hyprland + Waybar                         |
 | `Ctrl + Alt + A`      | Screenshot region (grim + slurp)                 |
 | `Super + F`           | Fullscreen                                       |
-| Waybar Bluetooth icon | Click opens `blueman-manager` GUI (not bluetoothctl) |
+| Waybar Bluetooth icon | Click: start `bluetooth.service` + power on adapter, then open `blueman-manager` (no-op if already on) |
 | `Super + 1-5`         | Switch workspace                                 |
 | `Super + Shift + 1-5` | Move window to workspace                         |
 | `Super + R`           | Resize mode (arrow keys to resize)               |
@@ -119,5 +122,10 @@ On first start, `init.sh` will stop and restart `hyprland-session.target` to pic
 ├── fcitx5/                 # Input method config
 └── foot/                   # Terminal config
 .local/bin/
-└── powermenu              # Power menu script
+├── powermenu              # Power menu script
+├── bt-toggle              # On-demand bluetooth toggle (waybar module)
+├── power-mode             # Power-profiles-daemon mode switcher (waybar module)
+├── temperature            # CPU temperature (waybar module, lm-sensors)
+├── weather                # wttr.in one-line weather (waybar module)
+└── mpv-profile-watch      # TLP profile -> mpv config watcher (systemd user service)
 ```
