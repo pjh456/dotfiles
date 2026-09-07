@@ -35,7 +35,7 @@ toggle() {
     changed=1
   fi
   if [ "$changed" = 1 ]; then
-    for i in $(seq 1 10); do
+    for _ in {1..10}; do
       power=$(bluetoothctl show 2>/dev/null | grep "Powered:" | awk '{print $2}')
       [ "$power" = "yes" ] && break
       sleep 0.3

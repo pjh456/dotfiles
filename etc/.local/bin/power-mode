@@ -11,7 +11,8 @@ get_profiles() {
 }
 
 status() {
-  local current=$(get_profile)
+  local current
+  current=$(get_profile)
   local icon
   case "$current" in
     power-saver)        icon="" ;;
@@ -23,7 +24,8 @@ status() {
 }
 
 next() {
-  local current=$(get_profile)
+  local current
+  current=$(get_profile)
   local next_profile
   case "$current" in
     power-saver)  next_profile="balanced" ;;
