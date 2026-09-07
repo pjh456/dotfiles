@@ -42,6 +42,7 @@ Options:
 | Option | Effect |
 |---|---|
 | `--packages` | Also install the required packages — official repos via `pacman` (Arch) or `apt` (Debian), AUR via your `yay`/`paru`/`buttercup` if one is present; on Debian the manual-build packages are printed instead. Lists live in [`packages/`](packages/), validated by CI against the live databases. |
+| `--no-<pkg>` | With `--packages`: do not install package `<pkg>`. The name must exist in the detected distro's package lists — unknown names are rejected. |
 | `--restore [DIR]` | Undo a deployment: remove the deployed files (tracked in `~/.dotfiles-deployed`) and restore the backed-up originals from `DIR` (default: newest `~/.dotfiles-backup-*`). Systemd enabling, uv tools and the sudoers rule are not rolled back. |
 | `--no-systemd` | Skip `daemon-reload` and enabling the session services. |
 | `--no-sudo` | Skip the on-demand bluetooth sudoers rule. |
