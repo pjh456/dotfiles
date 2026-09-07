@@ -34,7 +34,6 @@ By default `install.sh`:
 - backs up any existing dotfiles to `~/.dotfiles-backup-<timestamp>/`, then
   copies everything from `etc/` into `$HOME` as regular files;
 - enables the session services whose binaries are installed (`systemctl --user`);
-- installs the uv tools (`hyprconf2lua`, `ruff`, `zhihu-tui`);
 - writes the NOPASSWD sudoers rule for on-demand bluetooth.
 
 Options:
@@ -43,10 +42,9 @@ Options:
 |---|---|
 | `--packages` | Also install the required packages — official repos via `pacman` (Arch) or `apt` (Debian), AUR via your `yay`/`paru`/`buttercup` if one is present; on Debian the manual-build packages are printed instead. Lists live in [`packages/`](packages/), validated by CI against the live databases. |
 | `--no-<pkg>` | With `--packages`: do not install package `<pkg>`. The name must exist in the detected distro's package lists — unknown names are rejected. |
-| `--restore [DIR]` | Undo a deployment: remove the deployed files (tracked in `~/.dotfiles-deployed`) and restore the backed-up originals from `DIR` (default: newest `~/.dotfiles-backup-*`). Systemd enabling, uv tools and the sudoers rule are not rolled back. |
+| `--restore [DIR]` | Undo a deployment: remove the deployed files (tracked in `~/.dotfiles-deployed`) and restore the backed-up originals from `DIR` (default: newest `~/.dotfiles-backup-*`). Systemd enabling and the sudoers rule are not rolled back. |
 | `--no-systemd` | Skip `daemon-reload` and enabling the session services. |
 | `--no-sudo` | Skip the on-demand bluetooth sudoers rule. |
-| `--no-uv` | Skip the uv tool installs. |
 | `-h`, `--help` | Show usage. |
 
 The script is idempotent — re-running it is safe.
@@ -106,7 +104,7 @@ before committing if you want to keep them.
 
 Removes the deployed files (tracked in `~/.dotfiles-deployed`) and
 restores the backed-up originals. Not rolled back: systemd service
-enabling, uv tools, the sudoers rule.
+enabling, the sudoers rule.
 
 ## Keybindings
 

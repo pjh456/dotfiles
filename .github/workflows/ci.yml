@@ -39,7 +39,7 @@ jobs:
           if ./install.sh --packages --no-not-a-real-pkg 2>/tmp/err; then exit 1; fi
           grep -q "not in the arch package lists" /tmp/err
           # --no-<pkg> filters the install
-          out=$(./install.sh --packages --no-systemd --no-sudo --no-uv --no-lm_sensors)
+          out=$(./install.sh --packages --no-systemd --no-sudo --no-lm_sensors)
           echo "$out"
           # container has no AUR helper: the skip-note path must be exercised
           echo "$out" | grep -q 'no AUR helper'
@@ -49,7 +49,7 @@ jobs:
             pacman -Qi "$p" > /dev/null
           done
           # finish the skipped package
-          ./install.sh --packages --no-systemd --no-sudo --no-uv > /dev/null
+          ./install.sh --packages --no-systemd --no-sudo > /dev/null
           pacman -Qi lm_sensors > /dev/null
 
   debian-install:
@@ -64,7 +64,7 @@ jobs:
           # unknown --no-<pkg> names must be rejected before any install
           if ./install.sh --packages --no-not-a-real-pkg 2>/tmp/err; then exit 1; fi
           grep -q "not in the debian package lists" /tmp/err
-          out=$(./install.sh --packages --no-systemd --no-sudo --no-uv)
+          out=$(./install.sh --packages --no-systemd --no-sudo)
           echo "$out"
           # manual-build list must be surfaced
           echo "$out" | grep -q 'no Debian packages for: hypridle hyprlock hyprpaper hyprswitch swaync fonts-jetbrains-mono-nerd'
@@ -82,14 +82,14 @@ jobs:
           home=$(mktemp -d)
           mkdir -p "$home/.config/hypr"
           echo "old" > "$home/.config/hypr/hyprland.conf"
-          HOME="$home" bash install.sh --no-systemd --no-sudo --no-uv
+          HOME="$home" bash install.sh --no-systemd --no-sudo
           # deployed as a regular copy with repo content, original backed up
           [ -f "$home/.config/hypr/hyprland.conf" ] && [ ! -L "$home/.config/hypr/hyprland.conf" ]
           diff "$home/.config/hypr/hyprland.conf" "$GITHUB_WORKSPACE/etc/.config/hypr/hyprland.conf"
           [ -n "$(ls -d "$home"/.dotfiles-backup-*)" ]
           grep -q old "$home"/.dotfiles-backup-*//.config/hypr/hyprland.conf
           # idempotent: second run must not create another backup dir
-          HOME="$home" bash install.sh --no-systemd --no-sudo --no-uv
+          HOME="$home" bash install.sh --no-systemd --no-sudo
           [ "$(ls -d "$home"/.dotfiles-backup-* | wc -l)" -eq 1 ]
           # restore brings the original back and removes deployed files
           HOME="$home" bash install.sh --restore

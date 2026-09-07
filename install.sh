@@ -12,11 +12,9 @@ SERVICES=(
   fcitx5-daemon:fcitx5
   copyq:copyq
 )
-UV_TOOLS=(hyprconf2lua ruff zhihu-tui)
 
 with_systemd=1
 with_sudo=1
-with_uv=1
 with_packages=0
 with_restore=0
 restore_dir=
@@ -27,8 +25,8 @@ usage() {
 Usage: $(basename "$0") [options]
 
 Deploy dotfiles from etc/ into \$HOME as regular file copies, enable
-systemd user services, install uv tools, and set up the on-demand
-bluetooth sudoers rule. Idempotent: safe to re-run.
+systemd user services, and set up the on-demand bluetooth sudoers rule.
+Idempotent: safe to re-run.
 
 Options:
   --packages          also install required packages (arch, debian)
@@ -37,7 +35,6 @@ Options:
                       ~/.dotfiles-backup-*)
   --no-systemd        skip daemon-reload / service enabling
   --no-sudo           skip the bluetooth sudoers rule
-  --no-uv             skip uv tool installs
   --no-<pkg>          do not install package <pkg> (requires --packages; the
                       name must exist in the detected distro's package lists)
   -h, --help          show this help
@@ -54,7 +51,6 @@ while [ $# -gt 0 ]; do
       ;;
     --no-systemd) with_systemd=0; shift ;;
     --no-sudo) with_sudo=0; shift ;;
-    --no-uv) with_uv=0; shift ;;
     --no-*)
       NO_PKGS+=("${1#--no-}")
       shift
@@ -112,7 +108,7 @@ if [ "$with_restore" -eq 1 ]; then
 
   rm -f "$manifest_file"
   echo "restored $RESTORED file(s) from $restore_dir (deployed files removed)"
-  echo "note: systemd enabling, uv tools and the sudoers rule are not rolled back"
+  echo "note: systemd enabling and the sudoers rule are not rolled back"
   exit 0
 fi
 
@@ -270,18 +266,7 @@ if [ "$with_systemd" -eq 1 ] && command -v systemctl >/dev/null 2>&1; then
   fi
 fi
 
-# --- 3. uv tools -----------------------------------------------------------
-if [ "$with_uv" -eq 1 ]; then
-  if command -v uv >/dev/null 2>&1; then
-    for t in "${UV_TOOLS[@]}"; do
-      uv tool install --quiet "$t" && echo "installed uv tool: $t"
-    done
-  else
-    echo "note: uv not found, skipped uv tools (uv tool install ${UV_TOOLS[*]})"
-  fi
-fi
-
-# --- 4. on-demand bluetooth sudoers rule ------------------------------------
+# --- 3. on-demand bluetooth sudoers rule ------------------------------------
 if [ "$with_sudo" -eq 1 ]; then
   rule="/etc/sudoers.d/bluetooth-ondemand"
   if [ -e "$rule" ]; then
