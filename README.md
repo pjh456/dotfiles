@@ -126,6 +126,34 @@ enabling, the sudoers rule.
 | `Super + Shift + 1-5` | Move window to workspace                         |
 | `Super + R`           | Resize mode (arrow keys to resize)               |
 
+## Helper scripts
+
+All live in `~/.local/bin/` — the ones you run yourself, and the ones the
+configs invoke.
+
+### Run manually
+
+| Script | What it does |
+|---|---|
+| `setwp <image>` | Set the wallpaper from any file: `setwp ~/Pictures/wall.jpg` (goes through `hyprpaper`, so the live compositor keeps it) |
+| `unsetwp` | Back to the solid-black wallpaper (keeps hyprpaper alive) |
+| `powermenu` | Rofi power menu — also the `Super + L` binding |
+| `clipmenu` | Scripted clipboard history: the `Super + V` pipeline, plus a "copied" notification and `--paste-once` |
+| `waybar-reload` | Fully kill and restart waybar after editing its config (the `Super + F5` binding only soft-reloads via `SIGUSR2`) |
+| `mpv-profile-switch` | Force-sync the mpv profile to the current TLP profile now — links `mpv.conf.{PRF,BAL,SAV}` → `mpv.conf`. Normally done automatically by `mpv-profile-watch` |
+| `power-profile-daemon` | Run in a terminal: watches AC plug events (inotify) and switches `performance` / `power-saver` on the D-Bus power-profiles interface |
+| `on-battery` | Exits 0 only while on battery — for one-liners: `on-battery && mpv-profile-switch` |
+
+### Invoked by the configs (not for manual use)
+
+| Script | Invoked by |
+|---|---|
+| `bt-toggle [status\|toggle]` | waybar bluetooth module (5s poll + click) |
+| `power-mode [status\|next]` | waybar power-profile module |
+| `temperature` | waybar temperature module |
+| `weather` | waybar weather module (30 min poll) |
+| `mpv-profile-watch` | user service; re-runs `mpv-profile-switch` when the TLP profile changes (10s poll) |
+
 ## File Structure
 
 ```
