@@ -33,7 +33,7 @@ By default `install.sh`:
 
 - backs up any existing dotfiles to `~/.dotfiles-backup-<timestamp>/`, then
   copies everything from `etc/` into `$HOME` as regular files;
-- enables the session services (`systemctl --user`);
+- enables the session services whose binaries are installed (`systemctl --user`);
 - installs the uv tools (`hyprconf2lua`, `ruff`, `zhihu-tui`);
 - writes the NOPASSWD sudoers rule for on-demand bluetooth.
 

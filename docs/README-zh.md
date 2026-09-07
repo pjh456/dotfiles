@@ -32,7 +32,7 @@ git clone https://github.com/pjh456/dotfiles ~/dotfiles
 
 - 把已存在的 dotfiles 备份到 `~/.dotfiles-backup-<时间戳>/`，然后以
   普通文件拷贝的方式把 `etc/` 里的全部内容放进 `$HOME`；
-- 启用会话服务（`systemctl --user`）；
+- 启用主程序已安装的会话服务（`systemctl --user`）；
 - 安装 uv 工具（`hyprconf2lua`、`ruff`、`zhihu-tui`）；
 - 写入按需蓝牙的 NOPASSWD sudoers 规则。
 
