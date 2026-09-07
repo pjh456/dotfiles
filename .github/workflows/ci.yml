@@ -42,7 +42,7 @@ jobs:
   debian-packages:
     runs-on: ubuntu-latest
     container:
-      image: debian:trixie
+      image: debian:testing
     steps:
       - uses: actions/checkout@v4
       - name: Verify all package names resolve (simulated install)

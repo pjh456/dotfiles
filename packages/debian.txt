@@ -1,13 +1,14 @@
-# Debian 13 (trixie) repo packages required by the dotfiles (one per line)
-# Names differ from arch where relevant (lm-sensors, fonts-*, ...)
+# Debian testing package list required by the dotfiles (one per line)
+# NOTE: Debian stable (trixie) lacks hyprland in main; use testing or
+# stable + trixie-backports (hyprland 0.55.x is in backports).
 hyprland
 waybar
 foot
 rofi
-swaync
 fcitx5
 fcitx5-chinese-addons
-fcitx5-gtk
+fcitx5-frontend-gtk3
+fcitx5-frontend-gtk4
 cliphist
 wl-clipboard
 grim
@@ -16,7 +17,6 @@ copyq
 blueman
 lm-sensors
 power-profiles-daemon
-fonts-jetbrains-mono-nerd
 fonts-noto-cjk
 papirus-icon-theme
 tlp
