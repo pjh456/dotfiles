@@ -13,6 +13,7 @@ with_uv=1
 with_packages=0
 with_restore=0
 restore_dir=
+NO_PKGS=()
 
 usage() {
   cat <<EOF
@@ -30,6 +31,8 @@ Options:
   --no-systemd        skip daemon-reload / service enabling
   --no-sudo           skip the bluetooth sudoers rule
   --no-uv             skip uv tool installs
+  --no-<pkg>          do not install package <pkg> (requires --packages; the
+                      name must exist in the detected distro's package lists)
   -h, --help          show this help
 EOF
 }
@@ -45,10 +48,19 @@ while [ $# -gt 0 ]; do
     --no-systemd) with_systemd=0; shift ;;
     --no-sudo) with_sudo=0; shift ;;
     --no-uv) with_uv=0; shift ;;
+    --no-*)
+      NO_PKGS+=("${1#--no-}")
+      shift
+      ;;
     -h | --help) usage; exit 0 ;;
     *) echo "error: unknown option: $1" >&2; usage; exit 1 ;;
   esac
 done
+
+if [ "${#NO_PKGS[@]}" -gt 0 ] && [ "$with_packages" -eq 0 ]; then
+  echo "error: --no-<pkg> filters package installs; use it with --packages" >&2
+  exit 1
+fi
 
 [ -d "$ETC" ] || { echo "error: $ETC not found (run from a clone of this repo)" >&2; exit 1; }
 
@@ -101,10 +113,46 @@ fi
 if [ "$with_packages" -eq 1 ]; then
   . /etc/os-release
 
+  SEEN_PKGS=()
+
   load_list() {
     local file="$REPO_ROOT/$1"
+    local -n _pkgs="$2"
+    local p n skip
     [ -f "$file" ] || { echo "error: missing $file" >&2; exit 1; }
-    mapfile -t "$2" < <(grep -vE '^[[:space:]]*(#|$)' "$file")
+    _pkgs=()
+    while IFS= read -r p; do
+      [ -n "$p" ] || continue
+      SEEN_PKGS+=("$p")
+      skip=0
+      for n in "${NO_PKGS[@]}"; do
+        if [ "$p" = "$n" ]; then
+          skip=1
+          break
+        fi
+      done
+      if [ "$skip" -eq 0 ]; then
+        _pkgs+=("$p")
+      fi
+    done < <(grep -vE '^[[:space:]]*(#|$)' "$file")
+  }
+
+  check_no_pkgs() {
+    local n p hit
+    for n in "${NO_PKGS[@]}"; do
+      hit=0
+      for p in "${SEEN_PKGS[@]}"; do
+        if [ "$p" = "$n" ]; then
+          hit=1
+          break
+        fi
+      done
+      if [ "$hit" -eq 0 ]; then
+        echo "error: --no-$n: '$n' is not in the $ID package lists" >&2
+        echo "available: ${SEEN_PKGS[*]}" >&2
+        exit 1
+      fi
+    done
   }
 
   SUDO=
@@ -114,6 +162,7 @@ if [ "$with_packages" -eq 1 ]; then
     arch)
       load_list packages/arch-official.txt PKGS_OFFICIAL
       load_list packages/arch-aur.txt PKGS_AUR
+      check_no_pkgs
 
       echo "installing official packages (pacman)..."
       $SUDO pacman -S --needed --noconfirm "${PKGS_OFFICIAL[@]}"
@@ -133,6 +182,7 @@ if [ "$with_packages" -eq 1 ]; then
     debian)
       load_list packages/debian.txt PKGS_OFFICIAL
       load_list packages/debian-manual.txt PKGS_MANUAL
+      check_no_pkgs
 
       echo "installing packages (apt, Debian)..."
       DEBIAN_FRONTEND=noninteractive $SUDO apt-get update -qq

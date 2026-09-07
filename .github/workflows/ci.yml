@@ -35,13 +35,22 @@ jobs:
         run: |
           set -euo pipefail
           pacman -Sy --noconfirm
-          out=$(./install.sh --packages --no-systemd --no-sudo --no-uv)
+          # unknown --no-<pkg> names must be rejected before any install
+          if ./install.sh --packages --no-not-a-real-pkg 2>/tmp/err; then exit 1; fi
+          grep -q "not in the arch package lists" /tmp/err
+          # --no-<pkg> filters the install
+          out=$(./install.sh --packages --no-systemd --no-sudo --no-uv --no-lm_sensors)
           echo "$out"
           # container has no AUR helper: the skip-note path must be exercised
           echo "$out" | grep -q 'no AUR helper'
+          ! pacman -Qi lm_sensors > /dev/null
           for p in $(grep -vE '^[[:space:]]*(#|$)' packages/arch-official.txt); do
+            [ "$p" = "lm_sensors" ] && continue
             pacman -Qi "$p" > /dev/null
           done
+          # finish the skipped package
+          ./install.sh --packages --no-systemd --no-sudo --no-uv > /dev/null
+          pacman -Qi lm_sensors > /dev/null
 
   debian-install:
     runs-on: ubuntu-latest
@@ -52,6 +61,9 @@ jobs:
       - name: Real install via install.sh --packages
         run: |
           set -euo pipefail
+          # unknown --no-<pkg> names must be rejected before any install
+          if ./install.sh --packages --no-not-a-real-pkg 2>/tmp/err; then exit 1; fi
+          grep -q "not in the debian package lists" /tmp/err
           out=$(./install.sh --packages --no-systemd --no-sudo --no-uv)
           echo "$out"
           # manual-build list must be surfaced
