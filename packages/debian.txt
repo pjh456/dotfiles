@@ -1,0 +1,26 @@
+# Debian 13 (trixie) repo packages required by the dotfiles (one per line)
+# Names differ from arch where relevant (lm-sensors, fonts-*, ...)
+hyprland
+waybar
+foot
+rofi
+swaync
+fcitx5
+fcitx5-chinese-addons
+fcitx5-gtk
+cliphist
+wl-clipboard
+grim
+slurp
+copyq
+blueman
+lm-sensors
+power-profiles-daemon
+fonts-jetbrains-mono-nerd
+fonts-noto-cjk
+papirus-icon-theme
+tlp
+pass
+starship
+fzf
+thefuck

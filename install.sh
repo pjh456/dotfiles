@@ -23,7 +23,7 @@ services, install uv tools, and set up the on-demand bluetooth sudoers
 rule. Idempotent: safe to re-run.
 
 Options:
-  --packages          also install required packages (arch only for now)
+  --packages          also install required packages (arch, debian)
   --restore [DIR]     undo a deployment: remove repo symlinks and restore
                       files from DIR (default: newest ~/.dotfiles-backup-*)
   --no-systemd        skip daemon-reload / service enabling
@@ -88,18 +88,20 @@ fi
 # --- 0. optional: install required packages --------------------------------
 if [ "$with_packages" -eq 1 ]; then
   . /etc/os-release
+
+  load_list() {
+    local file="$REPO_ROOT/$1"
+    [ -f "$file" ] || { echo "error: missing $file" >&2; exit 1; }
+    mapfile -t "$2" < <(grep -vE '^[[:space:]]*(#|$)' "$file")
+  }
+
+  SUDO=
+  [ "$(id -u)" -ne 0 ] && command -v sudo >/dev/null 2>&1 && SUDO=sudo
+
   case "$ID" in
     arch)
-      load_list() {
-        local file="$REPO_ROOT/$1"
-        [ -f "$file" ] || { echo "error: missing $file" >&2; exit 1; }
-        mapfile -t "$2" < <(grep -vE '^[[:space:]]*(#|$)' "$file")
-      }
       load_list packages/arch-official.txt PKGS_OFFICIAL
       load_list packages/arch-aur.txt PKGS_AUR
-
-      SUDO=
-      [ "$(id -u)" -ne 0 ] && command -v sudo >/dev/null 2>&1 && SUDO=sudo
 
       echo "installing official packages (pacman)..."
       $SUDO pacman -S --needed --noconfirm "${PKGS_OFFICIAL[@]}"
@@ -116,8 +118,21 @@ if [ "$with_packages" -eq 1 ]; then
         echo "      install manually: yay -S ${PKGS_AUR[*]}"
       fi
       ;;
+    debian)
+      load_list packages/debian.txt PKGS_OFFICIAL
+      load_list packages/debian-manual.txt PKGS_MANUAL
+
+      echo "installing packages (apt, Debian)..."
+      DEBIAN_FRONTEND=noninteractive $SUDO apt-get update -qq
+      DEBIAN_FRONTEND=noninteractive $SUDO apt-get install --yes --no-install-recommends "${PKGS_OFFICIAL[@]}"
+
+      if [ "${#PKGS_MANUAL[@]}" -gt 0 ]; then
+        echo "note: no Debian packages for: ${PKGS_MANUAL[*]}"
+        echo "      build from source (see README 'Manual builds')"
+      fi
+      ;;
     *)
-      echo "error: --packages supports 'arch' only (detected: $ID)" >&2
+      echo "error: --packages supports 'arch' and 'debian' (detected: $ID)" >&2
       exit 1
       ;;
   esac

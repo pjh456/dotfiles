@@ -39,6 +39,21 @@ jobs:
             pacman -Si "$p" > /dev/null 2>&1 || { echo "UNRESOLVED: $p" >&2; exit 1; }
           done
 
+  debian-packages:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:trixie
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify all package names resolve (simulated install)
+        run: |
+          set -euo pipefail
+          apt-get update -qq
+          pkgs=$(grep -vE '^[[:space:]]*(#|$)' packages/debian.txt | paste -sd' ')
+          apt-get -s install --no-install-recommends $pkgs > /tmp/apt-sim.log 2>&1 \
+            || { tail -20 /tmp/apt-sim.log >&2; exit 1; }
+          grep -E '^[0-9]+ upgraded' /tmp/apt-sim.log
+
   install-dry-run:
     runs-on: ubuntu-latest
     steps:

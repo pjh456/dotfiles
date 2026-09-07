@@ -1,0 +1,5 @@
+# No Debian repo package — build from source (urls in README)
+hypridle
+hyprlock
+hyprpaper
+hyprswitch
