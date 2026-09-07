@@ -23,10 +23,10 @@ This means when Hyprland exits, all services are cleaned up automatically.
 # Core
 sudo pacman -S hyprland waybar foot rofi swaync
 sudo pacman -S hypridle hyprlock hyprpaper
-sudo pacman -S fcitx5 fcitx5-im fcitx5-chinese-addons
+sudo pacman -S fcitx5 fcitx5-chinese-addons fcitx5-gtk
 sudo pacman -S cliphist wl-clipboard grim slurp
 sudo pacman -S copyq blueman
-sudo pacman -S lm-sensors power-profiles-daemon iwgtk
+sudo pacman -S lm_sensors power-profiles-daemon
 sudo pacman -S ttf-jetbrains-mono-nerd noto-fonts-cjk
 sudo pacman -S papirus-icon-theme
 
@@ -34,7 +34,7 @@ sudo pacman -S papirus-icon-theme
 sudo pacman -S tlp pass starship fzf thefuck
 
 # AUR (use your preferred AUR helper, e.g. yay)
-yay -S hyprswitch catppuccin-mocha-gtk-themes catppuccin-mocha-cursors
+yay -S hyprswitch iwgtk catppuccin-mocha-gtk-themes catppuccin-mocha-cursors
 ```
 
 ### 2. Clone and deploy

@@ -10,6 +10,7 @@ UV_TOOLS=(hyprconf2lua ruff zhihu-tui)
 with_systemd=1
 with_sudo=1
 with_uv=1
+with_packages=0
 
 usage() {
   cat <<EOF
@@ -20,6 +21,7 @@ services, install uv tools, and set up the on-demand bluetooth sudoers
 rule. Idempotent: safe to re-run.
 
 Options:
+  --packages    also install required packages (arch only for now)
   --no-systemd  skip daemon-reload / service enabling
   --no-sudo     skip the bluetooth sudoers rule
   --no-uv       skip uv tool installs
@@ -29,6 +31,7 @@ EOF
 
 for arg in "$@"; do
   case "$arg" in
+    --packages) with_packages=1 ;;
     --no-systemd) with_systemd=0 ;;
     --no-sudo) with_sudo=0 ;;
     --no-uv) with_uv=0 ;;
@@ -38,6 +41,49 @@ for arg in "$@"; do
 done
 
 [ -d "$ETC" ] || { echo "error: $ETC not found (run from a clone of this repo)" >&2; exit 1; }
+
+# --- 0. optional: install required packages --------------------------------
+if [ "$with_packages" -eq 1 ]; then
+  . /etc/os-release
+  case "$ID" in
+    arch)
+      PKGS_OFFICIAL=(
+        hyprland waybar foot rofi swaync
+        hypridle hyprlock hyprpaper
+        fcitx5 fcitx5-chinese-addons fcitx5-gtk
+        cliphist wl-clipboard grim slurp
+        copyq blueman
+        lm_sensors power-profiles-daemon
+        ttf-jetbrains-mono-nerd noto-fonts-cjk
+        papirus-icon-theme
+        tlp pass starship fzf thefuck
+      )
+      PKGS_AUR=(hyprswitch iwgtk catppuccin-mocha-gtk-themes catppuccin-mocha-cursors)
+
+      SUDO=
+      [ "$(id -u)" -ne 0 ] && command -v sudo >/dev/null 2>&1 && SUDO=sudo
+
+      echo "installing official packages (pacman)..."
+      $SUDO pacman -S --needed --noconfirm "${PKGS_OFFICIAL[@]}"
+
+      helper=
+      for h in yay paru buttercup; do
+        command -v "$h" >/dev/null 2>&1 && helper=$h && break
+      done
+      if [ -n "$helper" ]; then
+        echo "installing AUR packages ($helper)..."
+        $SUDO "$helper" -S --needed --noconfirm "${PKGS_AUR[@]}"
+      else
+        echo "note: no AUR helper (yay/paru/buttercup) found, skipped: ${PKGS_AUR[*]}"
+        echo "      install manually: yay -S ${PKGS_AUR[*]}"
+      fi
+      ;;
+    *)
+      echo "error: --packages supports 'arch' only (detected: $ID)" >&2
+      exit 1
+      ;;
+  esac
+fi
 
 # --- 1. collect conflicts, back them up, then symlink everything ----------
 backup_dir="$HOME/.dotfiles-backup-$(date +%Y%m%d-%H%M%S)"
