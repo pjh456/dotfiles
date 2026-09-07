@@ -53,7 +53,7 @@ if [ "$with_packages" -eq 1 ]; then
         fcitx5 fcitx5-chinese-addons fcitx5-gtk
         cliphist wl-clipboard grim slurp
         copyq blueman
-        lm_sensors power-profiles-daemon
+        lm_sensors tlp-pd
         ttf-jetbrains-mono-nerd noto-fonts-cjk
         papirus-icon-theme
         tlp pass starship fzf thefuck

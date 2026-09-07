@@ -26,7 +26,7 @@ sudo pacman -S hypridle hyprlock hyprpaper
 sudo pacman -S fcitx5 fcitx5-chinese-addons fcitx5-gtk
 sudo pacman -S cliphist wl-clipboard grim slurp
 sudo pacman -S copyq blueman
-sudo pacman -S lm_sensors power-profiles-daemon
+sudo pacman -S lm_sensors tlp-pd
 sudo pacman -S ttf-jetbrains-mono-nerd noto-fonts-cjk
 sudo pacman -S papirus-icon-theme
 
