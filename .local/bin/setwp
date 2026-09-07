@@ -1,0 +1,10 @@
+#!/bin/dash
+if [ -z "$1" ]; then
+    echo "Usage: setwp <image_path>"
+    exit 1
+fi
+if [ ! -f "$1" ]; then
+    echo "Error: file not found: $1"
+    exit 1
+fi
+hyprctl hyprpaper "wallpaper ,$(realpath "$1")"

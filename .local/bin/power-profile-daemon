@@ -1,0 +1,52 @@
+#!/bin/bash
+DBUS_IFACE="net.hadess.PowerProfiles"
+DBUS_PATH="/net/hadess/PowerProfiles"
+POWER_SUPPLY_DIR="/sys/class/power_supply"
+
+set_profile() {
+  local profile="$1"
+  local current
+  current=$(busctl get-property "$DBUS_IFACE" "$DBUS_PATH" "$DBUS_IFACE" ActiveProfile 2>/dev/null | cut -d' ' -f2 | tr -d '"')
+  [[ "$current" != "$profile" ]] || return
+  busctl set-property "$DBUS_IFACE" "$DBUS_PATH" "$DBUS_IFACE" ActiveProfile s "$profile"
+  pkill -RTMIN+1 waybar 2>/dev/null
+}
+
+is_ac_online() {
+  for d in "$POWER_SUPPLY_DIR"/*/online; do
+    [[ -f "$d" ]] || continue
+    local type
+    type=$(cat "$(dirname "$d")/type" 2>/dev/null)
+    [[ "$type" == "Mains" || "$type" == "USB" || "$type" == "UPS" ]] || continue
+    [[ "$(cat "$d")" == "1" ]] && return 0
+  done
+  return 1
+}
+
+is_ac_online && PREV_ON_AC=1 || PREV_ON_AC=0
+
+if [[ "$PREV_ON_AC" == "1" ]]; then
+  set_profile "performance"
+else
+  set_profile "power-saver"
+fi
+
+WATCH_DIRS=()
+for d in "$POWER_SUPPLY_DIR"/*/online; do
+  [[ -f "$d" ]] && WATCH_DIRS+=("$(dirname "$d")")
+done
+
+while read -r dir _; do
+  local_type=$(cat "$dir/type" 2>/dev/null)
+  [[ "$local_type" == "Mains" || "$local_type" == "USB" ]] || continue
+
+  is_ac_online && NOW_ON_AC=1 || NOW_ON_AC=0
+  [[ "$NOW_ON_AC" == "$PREV_ON_AC" ]] && continue
+
+  if [[ "$NOW_ON_AC" == "1" ]]; then
+    set_profile "performance"
+  else
+    set_profile "power-saver"
+  fi
+  PREV_ON_AC="$NOW_ON_AC"
+done < <(inotifywait -m -e modify "${WATCH_DIRS[@]}" 2>/dev/null)

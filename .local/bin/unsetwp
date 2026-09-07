@@ -1,0 +1,6 @@
+#!/bin/dash
+BLACK="/tmp/hyprpaper_black.png"
+if [ ! -f "$BLACK" ]; then
+    magick -size 1x1 xc:black "$BLACK"
+fi
+hyprctl hyprpaper wallpaper ",$BLACK"
