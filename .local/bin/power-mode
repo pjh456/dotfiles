@@ -1,0 +1,41 @@
+#!/bin/bash
+DBUS_IFACE="net.hadess.PowerProfiles"
+DBUS_PATH="/net/hadess/PowerProfiles"
+
+get_profile() {
+  busctl get-property "$DBUS_IFACE" "$DBUS_PATH" "$DBUS_IFACE" ActiveProfile 2>/dev/null | cut -d' ' -f2 | tr -d '"'
+}
+
+get_profiles() {
+  busctl get-property "$DBUS_IFACE" "$DBUS_PATH" "$DBUS_IFACE" Profiles 2>/dev/null
+}
+
+status() {
+  local current=$(get_profile)
+  local icon
+  case "$current" in
+    power-saver)        icon="" ;;
+    balanced)           icon="" ;;
+    performance)        icon="" ;;
+    *)                  icon="" ;;
+  esac
+  echo "{\"text\":\"${icon} ${current}\",\"class\":\"${current}\",\"tooltip\":\"Power profile: ${current}\"}"
+}
+
+next() {
+  local current=$(get_profile)
+  local next_profile
+  case "$current" in
+    power-saver)  next_profile="balanced" ;;
+    balanced)     next_profile="performance" ;;
+    performance)  next_profile="power-saver" ;;
+    *)            next_profile="balanced" ;;
+  esac
+  busctl set-property "$DBUS_IFACE" "$DBUS_PATH" "$DBUS_IFACE" ActiveProfile s "$next_profile"
+  pkill -RTMIN+1 waybar 2>/dev/null
+}
+
+case "${1:-status}" in
+  status) status ;;
+  next) next ;;
+esac

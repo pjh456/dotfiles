@@ -1,0 +1,7 @@
+#!/bin/dash
+data=$(curl -s "https://wttr.in?format=%C+%t&m" 2>/dev/null)
+if [ -n "$data" ]; then
+  echo " 󰖌 $data"
+else
+  echo ""
+fi

@@ -1,0 +1,17 @@
+#!/bin/dash
+
+temp=$(sensors 2>/dev/null | awk '/Package id 0/ {gsub(/[+°C]/,"",$4); print int($4); exit}')
+
+if [ -z "$temp" ]; then
+  echo '{"text": "N/A", "class": "normal"}'
+  exit
+fi
+
+if   [ "$temp" -lt 45 ]; then cls="normal";    icon=""
+elif [ "$temp" -lt 60 ]; then cls="warm";      icon=""
+elif [ "$temp" -lt 75 ]; then cls="hot";       icon=""
+elif [ "$temp" -lt 85 ]; then cls="very-hot";  icon=""
+else                           cls="critical";  icon=""
+fi
+
+echo "{\"text\": \"$icon $temp°C\", \"class\": \"$cls\"}"
