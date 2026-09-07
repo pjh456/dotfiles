@@ -58,7 +58,7 @@ if [ "$with_packages" -eq 1 ]; then
         papirus-icon-theme
         tlp pass starship fzf thefuck
       )
-      PKGS_AUR=(hyprswitch iwgtk catppuccin-mocha-gtk-themes catppuccin-mocha-cursors)
+      PKGS_AUR=(hyprswitch iwgtk catppuccin-gtk-theme-mocha catppuccin-cursors-mocha)
 
       SUDO=
       [ "$(id -u)" -ne 0 ] && command -v sudo >/dev/null 2>&1 && SUDO=sudo

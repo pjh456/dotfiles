@@ -34,7 +34,7 @@ sudo pacman -S papirus-icon-theme
 sudo pacman -S tlp pass starship fzf thefuck
 
 # AUR (use your preferred AUR helper, e.g. yay)
-yay -S hyprswitch iwgtk catppuccin-mocha-gtk-themes catppuccin-mocha-cursors
+yay -S hyprswitch iwgtk catppuccin-gtk-theme-mocha catppuccin-cursors-mocha
 ```
 
 ### 2. Clone and deploy
