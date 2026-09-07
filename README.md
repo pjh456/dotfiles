@@ -29,23 +29,29 @@ git clone https://github.com/pjh456/dotfiles ~/dotfiles
 ~/dotfiles/install.sh --packages
 ```
 
-What `install.sh` does:
+By default `install.sh`:
 
-- `--packages`: installs required packages — official repos via `pacman`,
-  AUR via your `yay`/`paru`/`buttercup` if one is present. Lists live in
-  [`packages/`](packages/) and are validated by CI against the live Arch
-  databases.
-- Backs up any existing dotfiles to `~/.dotfiles-backup-<timestamp>/`, then
-  copies everything from `etc/` into `$HOME` as regular files.
-- Enables the session services (`systemctl --user`), installs uv tools
-  (`hyprconf2lua`, `ruff`, `zhihu-tui`), and writes the NOPASSWD sudoers
-  rule for on-demand bluetooth.
+- backs up any existing dotfiles to `~/.dotfiles-backup-<timestamp>/`, then
+  copies everything from `etc/` into `$HOME` as regular files;
+- enables the session services (`systemctl --user`);
+- installs the uv tools (`hyprconf2lua`, `ruff`, `zhihu-tui`);
+- writes the NOPASSWD sudoers rule for on-demand bluetooth.
+
+Options:
+
+| Option | Effect |
+|---|---|
+| `--packages` | Also install the required packages — official repos via `pacman` (Arch) or `apt` (Debian), AUR via your `yay`/`paru`/`buttercup` if one is present; on Debian the manual-build packages are printed instead. Lists live in [`packages/`](packages/), validated by CI against the live databases. |
+| `--restore [DIR]` | Undo a deployment: remove the deployed files (tracked in `~/.dotfiles-deployed`) and restore the backed-up originals from `DIR` (default: newest `~/.dotfiles-backup-*`). Systemd enabling, uv tools and the sudoers rule are not rolled back. |
+| `--no-systemd` | Skip `daemon-reload` and enabling the session services. |
+| `--no-sudo` | Skip the on-demand bluetooth sudoers rule. |
+| `--no-uv` | Skip the uv tool installs. |
+| `-h`, `--help` | Show usage. |
+
+The script is idempotent — re-running it is safe.
 
 Before the first run, make sure these `pass` entries exist (`.bashrc` reads
 them at shell startup): `snyk/token`, `huggingface/token`.
-
-Flags: `--no-systemd`, `--no-sudo`, `--no-uv` skip the respective steps.
-The script is idempotent — re-running it is safe.
 
 ### Debian notes
 

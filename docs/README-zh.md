@@ -28,21 +28,29 @@ git clone https://github.com/pjh456/dotfiles ~/dotfiles
 ~/dotfiles/install.sh --packages
 ```
 
-`install.sh` 会做什么：
+不带参数时 `install.sh` 会：
 
-- `--packages`：安装所需软件包——官方源走 `pacman`，若检测到 `yay`/`paru`/`buttercup` 则 AUR 走它们。清单位于
-  [`packages/`](../packages/)，由 CI 对着实时 Arch 数据库校验。
 - 把已存在的 dotfiles 备份到 `~/.dotfiles-backup-<时间戳>/`，然后以
-  普通文件拷贝的方式把 `etc/` 里的全部内容放进 `$HOME`。
-- 启用会话服务（`systemctl --user`）、安装 uv 工具
-  （`hyprconf2lua`、`ruff`、`zhihu-tui`）、写入按需蓝牙的 NOPASSWD
-  sudoers 规则。
+  普通文件拷贝的方式把 `etc/` 里的全部内容放进 `$HOME`；
+- 启用会话服务（`systemctl --user`）；
+- 安装 uv 工具（`hyprconf2lua`、`ruff`、`zhihu-tui`）；
+- 写入按需蓝牙的 NOPASSWD sudoers 规则。
+
+选项：
+
+| 选项 | 作用 |
+|---|---|
+| `--packages` | 额外安装所需软件包——官方源走 `pacman`（Arch）或 `apt`（Debian），若检测到 `yay`/`paru`/`buttercup` 则 AUR 走它们；Debian 上改为打印需要手动编译的清单。清单位于 [`packages/`](../packages/)，由 CI 对着实时数据库校验。 |
+| `--restore [DIR]` | 回滚一次部署：删除已部署的文件（按 `~/.dotfiles-deployed` 清单），并从 `DIR` 还原备份的原始文件（默认：最新的 `~/.dotfiles-backup-*`）。systemd 启用、uv 工具和 sudoers 规则不会回滚。 |
+| `--no-systemd` | 跳过 `daemon-reload` 和会话服务启用。 |
+| `--no-sudo` | 跳过按需蓝牙的 sudoers 规则。 |
+| `--no-uv` | 跳过 uv 工具安装。 |
+| `-h`, `--help` | 显示用法。 |
+
+脚本是幂等的——重复运行安全。
 
 首次运行前，确认以下 `pass` 条目已存在（`.bashrc` 在 shell 启动时读取）：
 `snyk/token`、`huggingface/token`。
-
-选项：`--no-systemd`、`--no-sudo`、`--no-uv` 跳过对应步骤。
-脚本是幂等的——重复运行安全。
 
 ### Debian 说明
 
