@@ -54,6 +54,8 @@ export PATH=~/.npm-global/bin:$PATH
 export TERMINAL=foot
 export PATH="$HOME/.local/bin:$PATH"
 
-# API KEY
-export SNYK_TOKEN=$(pass snyk/token)
-export HF_TOKEN=$(pass huggingface/token)
+# API KEY (skipped silently when `pass` is not installed)
+if command -v pass >/dev/null 2>&1; then
+  export SNYK_TOKEN=$(pass snyk/token)
+  export HF_TOKEN=$(pass huggingface/token)
+fi

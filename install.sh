@@ -183,6 +183,9 @@ if [ "$with_packages" -eq 1 ]; then
         lm_sensors)
           echo "note: without lm_sensors the waybar temperature module shows N/A"
           ;;
+        pass)
+          echo "note: without pass, SNYK_TOKEN/HF_TOKEN stay unset and the hyprlock password prompt has no source"
+          ;;
       esac
     done
   }
