@@ -186,6 +186,9 @@ if [ "$with_packages" -eq 1 ]; then
         pass)
           echo "note: without pass, SNYK_TOKEN/HF_TOKEN stay unset and the hyprlock password prompt has no source"
           ;;
+        blueman)
+          echo "note: without blueman, clicking the waybar bluetooth icon toggles the service but no manager GUI opens"
+          ;;
       esac
     done
   }

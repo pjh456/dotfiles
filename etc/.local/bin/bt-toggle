@@ -42,7 +42,9 @@ toggle() {
     done
     pkill -RTMIN+1 waybar 2>/dev/null
   fi
-  blueman-manager
+  if command -v blueman-manager >/dev/null 2>&1; then
+    blueman-manager
+  fi
   pkill -RTMIN+1 waybar 2>/dev/null
 }
 
