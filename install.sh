@@ -180,6 +180,9 @@ if [ "$with_packages" -eq 1 ]; then
         tlp)
           echo "note: without tlp the power-mode module shows N/A and the mpv profile stays 'balanced'"
           ;;
+        lm_sensors)
+          echo "note: without lm_sensors the waybar temperature module shows N/A"
+          ;;
       esac
     done
   }
