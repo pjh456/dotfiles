@@ -47,7 +47,7 @@ jobs:
           ! pacman -Qi tlp > /dev/null
           ! pacman -Qi tlp-pd > /dev/null
           for p in $(grep -vE '^[[:space:]]*(#|$)' packages/arch-official.txt); do
-            case "$p" in lm_sensors|tlp) continue ;; esac
+            case "$p" in lm_sensors|tlp|tlp-pd) continue ;; esac
             pacman -Qi "$p" > /dev/null
           done
           # finish the skipped packages (companion comes back with the main one)
