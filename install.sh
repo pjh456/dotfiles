@@ -13,6 +13,11 @@ SERVICES=(
   copyq:copyq
 )
 
+# packages that travel together: excluding the first also excludes the rest
+PKG_ALIASES=(
+  tlp:tlp-pd
+)
+
 with_systemd=1
 with_sudo=1
 with_packages=0
@@ -118,6 +123,19 @@ if [ "$with_packages" -eq 1 ]; then
 
   SEEN_PKGS=()
 
+  aliased_out() {
+    local pair main extra n
+    for pair in "${PKG_ALIASES[@]}"; do
+      main="${pair%%:*}"
+      extra="${pair##*:}"
+      [ "$extra" = "$1" ] || continue
+      for n in "${NO_PKGS[@]}"; do
+        [ "$n" = "$main" ] && return 0
+      done
+    done
+    return 1
+  }
+
   load_list() {
     local file="$REPO_ROOT/$1"
     local -n _pkgs="$2"
@@ -134,6 +152,9 @@ if [ "$with_packages" -eq 1 ]; then
           break
         fi
       done
+      if [ "$skip" -eq 0 ] && aliased_out "$p"; then
+        skip=1
+      fi
       if [ "$skip" -eq 0 ]; then
         _pkgs+=("$p")
       fi
@@ -155,6 +176,11 @@ if [ "$with_packages" -eq 1 ]; then
         echo "available: ${SEEN_PKGS[*]}" >&2
         exit 1
       fi
+      case "$n" in
+        tlp)
+          echo "note: without tlp the power-mode module shows N/A and the mpv profile stays 'balanced'"
+          ;;
+      esac
     done
   }
 

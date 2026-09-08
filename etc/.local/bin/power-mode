@@ -13,6 +13,10 @@ get_profiles() {
 status() {
   local current
   current=$(get_profile)
+  if [ -z "$current" ]; then
+    echo '{"text": "N/A", "class": "normal", "tooltip": "power profile daemon (tlp) not available"}'
+    return
+  fi
   local icon
   case "$current" in
     power-saver)        icon="" ;;
@@ -26,6 +30,9 @@ status() {
 next() {
   local current
   current=$(get_profile)
+  if [ -z "$current" ]; then
+    return
+  fi
   local next_profile
   case "$current" in
     power-saver)  next_profile="balanced" ;;

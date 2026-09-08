@@ -38,19 +38,23 @@ jobs:
           # unknown --no-<pkg> names must be rejected before any install
           if ./install.sh --packages --no-not-a-real-pkg 2>/tmp/err; then exit 1; fi
           grep -q "not in the arch package lists" /tmp/err
-          # --no-<pkg> filters the install
-          out=$(./install.sh --packages --no-systemd --no-sudo --no-lm_sensors)
+          # --no-<pkg> filters the install; --no-tlp drags its companion tlp-pd
+          out=$(./install.sh --packages --no-systemd --no-sudo --no-lm_sensors --no-tlp)
           echo "$out"
           # container has no AUR helper: the skip-note path must be exercised
           echo "$out" | grep -q 'no AUR helper'
           ! pacman -Qi lm_sensors > /dev/null
+          ! pacman -Qi tlp > /dev/null
+          ! pacman -Qi tlp-pd > /dev/null
           for p in $(grep -vE '^[[:space:]]*(#|$)' packages/arch-official.txt); do
-            [ "$p" = "lm_sensors" ] && continue
+            case "$p" in lm_sensors|tlp) continue ;; esac
             pacman -Qi "$p" > /dev/null
           done
-          # finish the skipped package
+          # finish the skipped packages (companion comes back with the main one)
           ./install.sh --packages --no-systemd --no-sudo > /dev/null
           pacman -Qi lm_sensors > /dev/null
+          pacman -Qi tlp > /dev/null
+          pacman -Qi tlp-pd > /dev/null
 
   debian-install:
     runs-on: ubuntu-latest
