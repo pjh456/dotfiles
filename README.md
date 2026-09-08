@@ -47,6 +47,9 @@ Options:
 | `--no-sudo` | Skip the on-demand bluetooth sudoers rule. |
 | `-h`, `--help` | Show usage. |
 
+Companion packages are excluded together: `--no-tlp` also excludes
+`tlp-pd`.
+
 The script is idempotent — re-running it is safe.
 
 Before the first run, make sure these `pass` entries exist (`.bashrc` reads

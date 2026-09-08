@@ -46,6 +46,8 @@ git clone https://github.com/pjh456/dotfiles ~/dotfiles
 | `--no-sudo` | 跳过按需蓝牙的 sudoers 规则。 |
 | `-h`, `--help` | 显示用法。 |
 
+伴生包会连带排除：`--no-tlp` 同时排除 `tlp-pd`。
+
 脚本是幂等的——重复运行安全。
 
 首次运行前，确认以下 `pass` 条目已存在（`.bashrc` 在 shell 启动时读取）：
