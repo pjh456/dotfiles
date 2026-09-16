@@ -12,7 +12,7 @@ management, plus shell and editor-adjacent configs.
 Services are managed via `systemd --user`:
 
 - `hyprland-session.target` — session lifecycle target
-- `hyprland.conf` runs `exec-once = ~/.config/hypr/scripts/init.sh` on startup
+- `hyprland.lua` runs `~/.config/hypr/scripts/init.sh` on startup (via the `hyprland.start` event)
 - `init.sh` imports Wayland env vars into systemd, then starts `hyprland-session.target`
 - All daemons (`waybar`, `swaync`, `hyprpaper`, `hypridle`, `fcitx5-daemon`, `copyq`) bind to this target via `BindsTo=` / `PartOf=`
 
@@ -173,7 +173,7 @@ configs invoke.
 │   ├── .bash_profile
 │   ├── .gitconfig
 │   ├── .config/
-│   │   ├── hypr/              # hyprland.conf, hypridle, hyprlock, hyprpaper, scripts/init.sh
+│   │   ├── hypr/              # hyprland.lua (+anim/keys/notify), hypridle, hyprlock, hyprpaper, scripts/init.sh
 │   │   ├── waybar/            # Status bar config & style
 │   │   ├── rofi/               # Launcher config
 │   │   ├── swaync/             # Notification center config & style

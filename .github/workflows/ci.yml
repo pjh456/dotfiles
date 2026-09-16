@@ -85,17 +85,17 @@ jobs:
           set -euo pipefail
           home=$(mktemp -d)
           mkdir -p "$home/.config/hypr"
-          echo "old" > "$home/.config/hypr/hyprland.conf"
+          echo "old" > "$home/.config/hypr/hyprland.lua"
           HOME="$home" bash install.sh --no-systemd --no-sudo
           # deployed as a regular copy with repo content, original backed up
-          [ -f "$home/.config/hypr/hyprland.conf" ] && [ ! -L "$home/.config/hypr/hyprland.conf" ]
-          diff "$home/.config/hypr/hyprland.conf" "$GITHUB_WORKSPACE/etc/.config/hypr/hyprland.conf"
+          [ -f "$home/.config/hypr/hyprland.lua" ] && [ ! -L "$home/.config/hypr/hyprland.lua" ]
+          diff "$home/.config/hypr/hyprland.lua" "$GITHUB_WORKSPACE/etc/.config/hypr/hyprland.lua"
           [ -n "$(ls -d "$home"/.dotfiles-backup-*)" ]
-          grep -q old "$home"/.dotfiles-backup-*//.config/hypr/hyprland.conf
+          grep -q old "$home"/.dotfiles-backup-*//.config/hypr/hyprland.lua
           # idempotent: second run must not create another backup dir
           HOME="$home" bash install.sh --no-systemd --no-sudo
           [ "$(ls -d "$home"/.dotfiles-backup-* | wc -l)" -eq 1 ]
           # restore brings the original back and removes deployed files
           HOME="$home" bash install.sh --restore
-          [ "$(cat "$home/.config/hypr/hyprland.conf")" = "old" ]
+          [ "$(cat "$home/.config/hypr/hyprland.lua")" = "old" ]
           [ ! -e "$home/.bashrc" ]

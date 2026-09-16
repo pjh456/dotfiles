@@ -11,7 +11,7 @@
 所有服务通过 `systemd --user` 管理：
 
 - `hyprland-session.target` — 会话生命周期 target
-- `hyprland.conf` 启动时执行 `exec-once = ~/.config/hypr/scripts/init.sh`
+- `hyprland.lua` 启动时执行 `~/.config/hypr/scripts/init.sh`（通过 `hyprland.start` 事件）
 - `init.sh` 把 Wayland 环境变量导入 systemd，然后启动 `hyprland-session.target`
 - 所有守护进程（`waybar`、`swaync`、`hyprpaper`、`hypridle`、`fcitx5-daemon`、`copyq`）通过 `BindsTo=` / `PartOf=` 绑定到该 target
 
@@ -167,7 +167,7 @@ start-hyprland
 │   ├── .bash_profile
 │   ├── .gitconfig
 │   ├── .config/
-│   │   ├── hypr/              # hyprland.conf、hypridle、hyprlock、hyprpaper、scripts/init.sh
+│   │   ├── hypr/              # hyprland.lua（+anim/keys/notify）、hypridle、hyprlock、hyprpaper、scripts/init.sh
 │   │   ├── waybar/            # 状态栏配置与样式
 │   │   ├── rofi/               # 启动器配置
 │   │   ├── swaync/             # 通知中心配置与样式
