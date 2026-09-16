@@ -173,6 +173,7 @@ configs invoke.
 │   ├── .bash_profile
 │   ├── .gitconfig
 │   ├── .config/
+│   │   ├── chrome-flags.conf  # Chromium/Electron: wayland native + Intel VA-API
 │   │   ├── hypr/              # hyprland.lua (+anim/keys/notify), hypridle, hyprlock, hyprpaper, scripts/init.sh
 │   │   ├── waybar/            # Status bar config & style
 │   │   ├── rofi/               # Launcher config

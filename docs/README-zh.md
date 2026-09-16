@@ -167,6 +167,7 @@ start-hyprland
 │   ├── .bash_profile
 │   ├── .gitconfig
 │   ├── .config/
+│   │   ├── chrome-flags.conf  # Chromium/Electron：Wayland 原生 + Intel VA-API
 │   │   ├── hypr/              # hyprland.lua（+anim/keys/notify）、hypridle、hyprlock、hyprpaper、scripts/init.sh
 │   │   ├── waybar/            # 状态栏配置与样式
 │   │   ├── rofi/               # 启动器配置
