@@ -8,7 +8,13 @@ local notify = require("notify")
 
 hl.env("MOZ_ENABLE_WAYLAND", 1)
 
-hl.env("MOZ_DISABLE_RDD_SANDBOX", 1)
+hl.env("ELECTRON_OZONE_PLATFORM_HINT", "auto")
+
+hl.env("QT_QPA_PLATFORM", "wayland;xcb")
+
+hl.env("QT_WAYLAND_DISABLE_WINDOWDECORATION", 1)
+
+hl.env("LIBVA_DRIVER_NAME", "iHD")
 
 hl.env("GTK_THEME", "catppuccin-mocha-blue-standard+default")
 
@@ -74,8 +80,8 @@ hl.config({
 		},
 		shadow = {
 			enabled = true,
-			range = 8,
-			render_power = 2,
+			range = 4,
+			render_power = 3,
 			color = "0x0000008C",
 		},
 	},
@@ -91,7 +97,7 @@ hl.config({
 
 hl.config({
 	misc = {
-		vrr = 1,
+		vrr = 2,
 		disable_hyprland_logo = true,
 		disable_splash_rendering = true,
 		background_color = "0x000000",
