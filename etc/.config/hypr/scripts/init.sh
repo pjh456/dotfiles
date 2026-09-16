@@ -19,6 +19,6 @@ else
     done
 fi
 
-wl-paste --type text --watch cliphist store 2>/dev/null &
+pgrep -x wl-paste >/dev/null || wl-paste --type text --watch cliphist store 2>/dev/null &
 
-nohup hyprswitch init > /dev/null 2>&1 &
+pgrep -x hyprswitch >/dev/null || nohup hyprswitch init > /dev/null 2>&1 &
