@@ -16,7 +16,6 @@ cliphist
 wl-clipboard
 grim
 slurp
-copyq
 blueman
 lm-sensors
 fonts-noto-cjk

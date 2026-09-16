@@ -14,7 +14,7 @@ Services are managed via `systemd --user`:
 - `hyprland-session.target` — session lifecycle target
 - `hyprland.lua` runs `~/.config/hypr/scripts/init.sh` on startup (via the `hyprland.start` event)
 - `init.sh` imports Wayland env vars into systemd, then starts `hyprland-session.target`
-- All daemons (`waybar`, `swaync`, `hyprpaper`, `hypridle`, `fcitx5-daemon`, `copyq`) bind to this target via `BindsTo=` / `PartOf=`
+- All daemons (`waybar`, `swaync`, `hyprpaper`, `hypridle`, `fcitx5-daemon`) bind to this target via `BindsTo=` / `PartOf=`
 
 Bluetooth is **on-demand** to save battery: `bluetooth.service` and the radio are off when idle. The waybar `bt-toggle` custom module shows the current state, and clicking it starts `bluetooth.service` (via the passwordless sudoers rule that `install.sh` sets up), powers the adapter on, and opens `blueman-manager`. The tray applet (`blueman-applet`) is not used.
 

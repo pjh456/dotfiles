@@ -14,7 +14,6 @@ cliphist
 wl-clipboard
 grim
 slurp
-copyq
 blueman
 lm_sensors
 tlp-pd

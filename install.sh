@@ -10,7 +10,6 @@ SERVICES=(
   hyprpaper:hyprpaper
   hypridle:hypridle
   fcitx5-daemon:fcitx5
-  copyq:copyq
 )
 
 # packages that travel together: excluding the first also excludes the rest

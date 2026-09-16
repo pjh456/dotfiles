@@ -13,7 +13,7 @@
 - `hyprland-session.target` — 会话生命周期 target
 - `hyprland.lua` 启动时执行 `~/.config/hypr/scripts/init.sh`（通过 `hyprland.start` 事件）
 - `init.sh` 把 Wayland 环境变量导入 systemd，然后启动 `hyprland-session.target`
-- 所有守护进程（`waybar`、`swaync`、`hyprpaper`、`hypridle`、`fcitx5-daemon`、`copyq`）通过 `BindsTo=` / `PartOf=` 绑定到该 target
+- 所有守护进程（`waybar`、`swaync`、`hyprpaper`、`hypridle`、`fcitx5-daemon`）通过 `BindsTo=` / `PartOf=` 绑定到该 target
 
 蓝牙是**按需启动**以省电的：空闲时 `bluetooth.service` 和无线电都是关闭的。waybar 的 `bt-toggle` 自定义模块显示当前状态，点击它会启动 `bluetooth.service`（经由 `install.sh` 配置的免密 sudoers 规则）、打开适配器并启动 `blueman-manager`。不使用托盘小程序（`blueman-applet`）。
 
