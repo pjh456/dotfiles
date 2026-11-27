@@ -291,7 +291,7 @@ tooltip label {
   color: #cdd6f4;
 }
 
-/* Volume/brightness OSD: osd-ctl sends an 'int:value' hint, which swaync
+/* Volume/brightness OSD: dotctl osd sends an 'int:value' hint, which swaync
    renders as a progress bar inside the notification. Without a rule it
    falls back to the stock GTK trough. */
 .notification-row .notification-background .notification .notification-default-action .notification-content progressbar {

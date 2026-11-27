@@ -46,7 +46,7 @@
         {
           "label": "",
           "type": "button",
-          "command": "sh -c '$HOME/.local/bin/bt-toggle toggle'"
+          "command": "sh -c '$HOME/.local/bin/dotctl bt toggle'"
         },
         {
           "label": "",

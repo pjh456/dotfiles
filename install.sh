@@ -24,7 +24,7 @@ with_systemd=1
 with_sudo=1
 with_packages=0
 with_restore=0
-with_cli=0
+with_cli=1
 cli_from_source=0
 restore_dir=
 NO_PKGS=()
@@ -42,11 +42,10 @@ Options:
   --restore [DIR]     undo a deployment: remove deployed files and restore
                       backed-up originals from DIR (default: newest
                       ~/.dotfiles-backup-*)
-  --with-cli          also install/update the dotctl Rust CLI (downloads the
-                      pinned release; falls back to a local cargo build)
+  --with-cli          install/update the dotctl Rust CLI (default; downloads
+                      the pinned release, falls back to a local cargo build)
   --cli-from-source   build dotctl locally instead of downloading the release
-                      (implies --with-cli)
-  --no-cli            do not install dotctl (default)
+  --no-cli            do not install/update dotctl
   --no-systemd        skip daemon-reload / service enabling
   --no-sudo           skip the system-level tweaks (bluetooth sudoers rule,
                       acpid media-key patch)
@@ -251,7 +250,7 @@ if [ "$with_packages" -eq 1 ]; then
       fi
       case "$n" in
         tlp)
-          echo "note: without tlp the power-mode module shows N/A and the mpv profile stays 'balanced'"
+          echo "note: without tlp the power-profile service cannot set a profile and the mpv profile stays 'balanced'"
           ;;
         lm_sensors)
           echo "note: without lm_sensors the waybar temperature module shows N/A"
@@ -350,7 +349,27 @@ while IFS= read -r -d '' f; do
   cp -a "$f" "$HOME/$rel"
 done < <(find "$ETC" -type f -print0)
 
-find "$ETC" -type f | sed "s|$ETC/||" > "$manifest_file"
+new_manifest="$manifest_file.new"
+find "$ETC" -type f | sed "s|$ETC/||" > "$new_manifest"
+
+# Files deployed by an older revision but removed from etc/ are moved to the
+# backup dir instead of lingering forever in $HOME.
+if [ -f "$manifest_file" ]; then
+  while IFS= read -r rel; do
+    [ -n "$rel" ] || continue
+    if grep -qxF "$rel" "$new_manifest"; then
+      continue
+    fi
+    target="$HOME/$rel"
+    if [ ! -e "$target" ] && [ ! -L "$target" ]; then
+      continue
+    fi
+    mkdir -p "$backup_dir/pruned/$(dirname "$rel")"
+    mv "$target" "$backup_dir/pruned/$rel"
+    echo "pruned $rel (no longer in etc/)"
+  done < "$manifest_file"
+fi
+mv "$new_manifest" "$manifest_file"
 echo "deployed $(wc -l < "$manifest_file") file(s) into \$HOME (copies; manifest: $manifest_file)"
 
 if [ "$with_cli" -eq 1 ]; then
@@ -425,7 +444,7 @@ if [ "$with_sudo" -eq 1 ]; then
 fi
 
 # --- 4. keep acpid off the media keys ---------------------------------------
-# Hyprland (keys.lua -> osd-ctl) owns volume/brightness. acpid's input layer
+# Hyprland (keys.lua -> dotctl osd) owns volume/brightness. acpid's input layer
 # still turns the same keycodes into button/mute, button/volumeup, ... and
 # runs wpctl/brightnessctl a second time, so mute cancels itself out and
 # volume/brightness step twice. Comment the command lines out and keep the
@@ -442,7 +461,7 @@ if [ "$with_sudo" -eq 1 ] && [ -f "$acpi_handler" ]; then
           cmd ~ /^\/usr\/local\/bin\/volume-control 1%[+-]$/ ||
           cmd ~ /^\/usr\/bin\/brightnessctl set [+]?1%-?$/) {
         match($0, /^[[:space:]]*/)
-        printf "%s# %s   # disabled: Hyprland keys.lua/osd-ctl owns this key\n", substr($0, 1, RLENGTH), cmd
+        printf "%s# %s   # disabled: Hyprland keys.lua/dotctl osd owns this key\n", substr($0, 1, RLENGTH), cmd
         next
       }
       print

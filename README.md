@@ -14,9 +14,9 @@ Services are managed via `systemd --user`:
 - `hyprland-session.target` — session lifecycle target
 - `hyprland.lua` runs `~/.config/hypr/scripts/init.sh` on startup (via the `hyprland.start` event)
 - `init.sh` imports Wayland env vars into systemd, then starts `hyprland-session.target`
-- All daemons (`waybar`, `swaync`, `hyprpaper`, `hypridle`, `fcitx5-daemon`) bind to this target via `BindsTo=` / `PartOf=`
+- All daemons (`waybar`, `swaync`, `hyprpaper`, `hypridle`, `fcitx5-daemon`, `power-profile`, `hyprland-guard`) bind to this target via `BindsTo=` / `PartOf=`. `mpv-profile-watch` runs on `default.target` because it only needs D-Bus.
 
-Bluetooth is **on-demand** to save battery: `bluetooth.service` and the radio are off when idle. The waybar `bt-toggle` custom module shows the current state, and clicking it starts `bluetooth.service` (via the passwordless sudoers rule that `install.sh` sets up), powers the adapter on, and opens `blueman-manager`. The tray applet (`blueman-applet`) is not used.
+Bluetooth is **on-demand** to save battery: `bluetooth.service` and the radio are off when idle. The waybar Bluetooth module (`dotctl status bt`) shows the current state, and clicking it starts `bluetooth.service` (via the passwordless sudoers rule that `install.sh` sets up), powers the adapter on, and opens `blueman-manager`. The tray applet (`blueman-applet`) is not used.
 
 This means when Hyprland exits, all services are cleaned up automatically.
 
@@ -45,6 +45,8 @@ By default `install.sh`:
 
 - backs up any existing dotfiles to `~/.dotfiles-backup-<timestamp>/`, then
   copies everything from `etc/` into `$HOME` as regular files;
+- installs the pinned `dotctl` release into `~/.local/bin` (checksum-verified;
+  `--no-cli` skips it, `--cli-from-source` forces a local build);
 - enables the session services whose binaries are installed (`systemctl --user`);
 - writes the NOPASSWD sudoers rule for on-demand bluetooth (and remembers it,
   so re-runs don't ask for a password);
@@ -59,6 +61,9 @@ Options:
 | `--packages` | Also install the required packages — official repos via `pacman` (Arch) or `apt` (Debian), AUR via your `yay`/`paru`/`buttercup` if one is present; on Debian the manual-build packages are printed instead. Lists live in [`packages/`](packages/), validated by CI against the live databases. |
 | `--no-<pkg>` | With `--packages`: do not install package `<pkg>`. The name must exist in the detected distro's package lists — unknown names are rejected. |
 | `--restore [DIR]` | Undo a deployment: remove the deployed files (tracked in `~/.dotfiles-deployed`) and restore the backed-up originals from `DIR` (default: newest `~/.dotfiles-backup-*`). Systemd enabling, the sudoers rule and the acpid patch are not rolled back. |
+| `--with-cli` | Install/update `dotctl` (default). Downloads the pinned `dotctl-v<version>` release and verifies `SHA256SUMS`; falls back to `cargo build` if needed. |
+| `--cli-from-source` | Build `dotctl` locally instead of downloading the release. |
+| `--no-cli` | Do not install/update `dotctl`. |
 | `--no-systemd` | Skip `daemon-reload` and enabling the session services. |
 | `--no-sudo` | Skip the system-level tweaks: the on-demand bluetooth sudoers rule and the acpid media-key patch. |
 | `-h`, `--help` | Show usage. |
@@ -79,7 +84,7 @@ via `apt` and prints the packages that need a manual build. Debian stable
 trixie-backports. Two specifics:
 
 - `tlp` conflicts with `power-profiles-daemon`. The waybar
-  `power-profiles-daemon` module (and the `power-mode` script) need the
+  `power-profiles-daemon` module (and the `dotctl watch power` service) need the
   `net.hadess.PowerProfiles` D-Bus interface, which tlp 1.10 provides
   built-in — enable it with `TLP_PD_ENABLE=1` in `/etc/tlp.conf`.
 - Arch's `fcitx5-gtk` is `fcitx5-frontend-gtk3` / `fcitx5-frontend-gtk4`
@@ -148,42 +153,58 @@ enabling, the sudoers rule.
 | `Super + R`           | Resize mode (arrow keys to resize)               |
 | `XF86Audio*` / `XF86MonBrightness*` | Volume / brightness OSD popup (swaync) |
 
-## Helper scripts
+## dotctl
 
-All live in `~/.local/bin/` — the ones you run yourself, and the ones the
-configs invoke.
+The desktop helpers are one Rust binary at `~/.local/bin/dotctl`. Waybar,
+the Hyprland keybinds, hypridle and the systemd user units all call it; the
+old shell scripts are gone.
+
+`install.sh` installs the pinned `dotctl-v<version>` release from GitHub
+(a static x86_64 musl binary), verifies `SHA256SUMS`, and falls back to a
+local `cargo build` if the download is unavailable. Use `--no-cli` to skip
+it, or `--cli-from-source` to force a local build.
+
+The hot paths avoid the old process fan-out: `status temp` reads hwmon
+directly (~0.5ms instead of ~20ms for `sensors | awk`), `status bt` never
+spawns `bluetoothctl` (which can block for minutes when the service is
+stopped), and the mpv/power watchers are event-driven instead of polling.
 
 ### Run manually
 
-| Script | What it does |
+| Command | What it does |
 |---|---|
-| `setwp <image>` | Set the wallpaper from any file: `setwp ~/Pictures/wall.jpg` (goes through `hyprpaper`, so the live compositor keeps it) |
-| `unsetwp` | Back to the solid-black wallpaper (keeps hyprpaper alive) |
-| `powermenu` | Rofi power menu — also the `Super + L` binding; a second press closes it |
-| `clipmenu` | Scripted clipboard history: the `Super + V` pipeline, plus a "copied" notification and `--paste-once` |
-| `rofi-toggle <args>` | Toggle any rofi menu (`rofi-toggle -show drun`): opens it, or closes it when already open |
-| `emoji` | Color emoji picker — the `Super + .` binding. Types the emoji into the focused window with `wtype`; QQ ignores synthesized emoji keys, so there it copies and sends Ctrl+V instead. Without `wtype` the emoji is left on the clipboard |
-| `power-mode [status\|next]` | Power profile from the CLI (`power-mode next`); the bar uses waybar's built-in `power-profiles-daemon` module |
-| `waybar-reload` | Restart waybar after editing its config (`systemctl --user restart waybar.service` when it runs under systemd); `Super + F5` calls it together with a Hyprland reload |
-| `mpv-profile-switch [profile]` | Force-sync the mpv profile now — links `mpv.conf.{PRF,BAL,SAV}` → `mpv.conf`. With no argument it asks TLP; `mpv-profile-watch` passes the D-Bus value straight in |
-| `power-profile-daemon` | Run in a terminal: watches AC plug events (inotify) and switches `performance` / `power-saver` on the D-Bus power-profiles interface |
-| `on-battery` | Exits 0 only while on battery — for one-liners: `on-battery && mpv-profile-switch` |
+| `dotctl wallpaper set <image>` | Set the wallpaper from any file (through `hyprpaper`) |
+| `dotctl wallpaper unset` | Back to the solid-black wallpaper (keeps hyprpaper alive) |
+| `dotctl menu power` | Rofi power menu — also `Super + L`; a second press closes it |
+| `dotctl menu clipboard` | Rofi clipboard history with a "copied" notification and `--paste-once` |
+| `dotctl menu emoji [--paste]` | Color emoji picker; `--paste` copies and sends Ctrl+V (used for QQ) |
+| `dotctl rofi -show drun` | Toggle any rofi menu: open it, or close it when already open |
+| `dotctl mpv [profile]` | Force-sync `mpv.conf.{PRF,BAL,SAV}` → `mpv.conf` now |
+| `dotctl reload waybar` | Restart Waybar after editing its config |
+| `dotctl on-battery` | Exit 0 only while on battery (hypridle one-liners) |
+| `dotctl doctor` | Check hwmon, D-Bus, Hyprland socket and external commands |
+| `dotctl guard --once` | Probe Hyprland liveness once; `dotctl guard` runs the log mirror |
 
-### Invoked by the configs (not for manual use)
+### Invoked by the configs
 
-| Script | Invoked by |
+| Command | Invoked by |
 |---|---|
-| `bt-toggle [status\|toggle]` | waybar bluetooth module (5s poll + click) |
-| `temperature` | waybar temperature module |
-| `weather` | waybar weather module (30 min poll); also caches the 7-day forecast |
-| `weather-forecast` | click on the waybar weather module or `Super + W`; renders the cached forecast with rofi |
-| `mpv-profile-watch` | user service; re-runs `mpv-profile-switch` when `net.hadess.PowerProfiles.ActiveProfile` changes (reads the property every 10s: ~2ms, not `tlp-stat`'s ~90ms) |
-| `osd-ctl volume up\|down\|mute`, `osd-ctl brightness up\|down` | Hyprland media keys |
+| `dotctl status temp` | Waybar temperature module (5s poll) |
+| `dotctl status bt`, `dotctl bt toggle` | Waybar Bluetooth module (5s poll + click) |
+| `dotctl weather`, `dotctl weather --forecast` | Waybar weather module (30 min poll) / `Super + W` |
+| `dotctl osd volume up\|down\|mute`, `dotctl osd brightness up\|down` | Hyprland media keys |
+| `dotctl menu clipboard\|emoji\|power\|launcher` | `Super + V`, `Super + .`, `Super + L`, `Super + Space` |
+| `dotctl watch mpv` | `mpv-profile-watch.service` (zbus PropertiesChanged) |
+| `dotctl watch power` | `power-profile.service` (inotify on AC state) |
+| `dotctl guard` | `hyprland-guard.service` (log mirror + hang capture) |
 
 ## File Structure
 
 ```
 ├── install.sh                 # Deploy / restore entrypoint
+├── dotctl/                    # Rust CLI (single static-musl binary)
+│   ├── Cargo.toml
+│   └── src/
 ├── docs/
 │   └── README-zh.md           # Chinese documentation
 ├── packages/
@@ -203,15 +224,12 @@ configs invoke.
 │   │   ├── btop/              # Catppuccin theme, transparent background
 │   │   ├── hypr/              # hyprland.lua (+anim/keys/notify), hypridle, hyprlock, hyprpaper, scripts/init.sh
 │   │   ├── waybar/            # Status bar config & style
-│   │   ├── rofi/               # Launcher config
-│   │   ├── swaync/             # Notification center config & style
-│   │   ├── fcitx5/             # Input method config
-│   │   ├── foot/               # Terminal config
-│   │   └── systemd/user/       # Session services (*.wants/ not tracked)
-│   ├── .local/bin/            # powermenu, bt-toggle, power-mode, temperature,
-│   │                         # weather, weather-forecast, clipmenu, setwp, waybar-reload,
-│   │                         # osd-ctl, mpv-profile-{watch,switch}, on-battery, ...
+│   │   ├── rofi/              # Launcher config
+│   │   ├── swaync/            # Notification center config & style
+│   │   ├── fcitx5/            # Input method config
+│   │   ├── foot/              # Terminal config
+│   │   └── systemd/user/      # Session services (*.wants/ not tracked)
 │   └── .local/share/
 │       └── fcitx5/themes/     # Self-contained fcitx5 theme (svg + png)
-└── .github/workflows/ci.yml   # shellcheck, JSON check, package resolution, dry-run
+└── .github/workflows/         # shellcheck/JSON/install tests + dotctl CI/release
 ```

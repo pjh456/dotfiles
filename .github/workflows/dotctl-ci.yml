@@ -4,11 +4,13 @@ on:
   push:
     paths:
       - "dotctl/**"
+      - "install.sh"
       - ".github/workflows/dotctl-ci.yml"
       - ".github/workflows/release.yml"
   pull_request:
     paths:
       - "dotctl/**"
+      - "install.sh"
       - ".github/workflows/dotctl-ci.yml"
       - ".github/workflows/release.yml"
 
@@ -34,6 +36,29 @@ jobs:
 
       - name: Test
         run: cargo test --manifest-path dotctl/Cargo.toml --locked
+
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: dotctl
+
+      - name: install.sh --cli-from-source into a fake HOME
+        env:
+          RUSTUP_HOME: /home/runner/.rustup
+          CARGO_HOME: /home/runner/.cargo
+        run: |
+          set -euo pipefail
+          home=$(mktemp -d)
+          HOME="$home" bash install.sh --no-systemd --no-sudo --with-cli --cli-from-source
+          "$home/.local/bin/dotctl" --version
+          HOME="$home" bash install.sh --restore
+          test ! -e "$home/.local/bin/dotctl"
 
   musl:
     runs-on: ubuntu-latest

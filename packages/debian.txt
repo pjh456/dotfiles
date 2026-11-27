@@ -1,7 +1,7 @@
 # Debian testing package list required by the dotfiles (one per line)
 # NOTE: Debian stable (trixie) lacks hyprland in main; use testing or
 # stable + trixie-backports (hyprland 0.55.x is in backports).
-# tlp conflicts with power-profiles-daemon; the power-mode waybar module
+# tlp conflicts with power-profiles-daemon; the dotctl power watcher
 # needs TLP_PD_ENABLE=1 in /etc/tlp.conf for the net.hadess.PowerProfiles
 # D-Bus interface.
 hyprland

@@ -18,10 +18,10 @@
       "tooltip": false
     },
     "custom/weather": {
-      "exec": "$HOME/.local/bin/weather",
+      "exec": "$HOME/.local/bin/dotctl weather",
       "interval": 1800,
       "return-type": "json",
-      "on-click": "$HOME/.local/bin/weather-forecast",
+      "on-click": "$HOME/.local/bin/dotctl weather --forecast",
       "tooltip": true
     },
     "custom/notification": {
@@ -54,14 +54,14 @@
         "default": ["", "", ""]
       },
       "on-click": "pavucontrol",
-      "on-click-right": "$HOME/.local/bin/osd-ctl volume mute",
+      "on-click-right": "$HOME/.local/bin/dotctl osd volume mute",
       "scroll-step": 5
     },
     "backlight": {
       "format": "{icon} {percent}%",
       "format-icons": ["󰃝", "󰃟", "󰃠"],
-      "on-click": "brightnessctl set 1%-",
-      "on-click-right": "brightnessctl set +1%"
+      "on-click": "$HOME/.local/bin/dotctl osd brightness down",
+      "on-click-right": "$HOME/.local/bin/dotctl osd brightness up"
     }
   },
   {
@@ -85,7 +85,7 @@
     },
     "custom/launcher": {
       "format": "  Menu",
-      "on-click": "$HOME/.local/bin/rofi-toggle -show drun",
+      "on-click": "$HOME/.local/bin/dotctl rofi -show drun",
       "tooltip": false
     },
     "network": {
@@ -97,11 +97,11 @@
       "interval": 10
     },
     "custom/bt-toggle": {
-      "exec": "$HOME/.local/bin/bt-toggle status",
+      "exec": "$HOME/.local/bin/dotctl status bt",
       "interval": 5,
       "signal": 1,
       "return-type": "json",
-      "on-click": "$HOME/.local/bin/bt-toggle toggle"
+      "on-click": "$HOME/.local/bin/dotctl bt toggle"
     },
     "cpu": {
       "format": " {usage}%",
@@ -119,7 +119,7 @@
       "on-click": "foot df"
     },
     "custom/temperature": {
-      "exec": "$HOME/.local/bin/temperature",
+      "exec": "$HOME/.local/bin/dotctl status temp",
       "interval": 5,
       "return-type": "json",
       "tooltip": true

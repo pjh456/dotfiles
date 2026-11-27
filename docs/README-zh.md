@@ -13,9 +13,9 @@
 - `hyprland-session.target` — 会话生命周期 target
 - `hyprland.lua` 启动时执行 `~/.config/hypr/scripts/init.sh`（通过 `hyprland.start` 事件）
 - `init.sh` 把 Wayland 环境变量导入 systemd，然后启动 `hyprland-session.target`
-- 所有守护进程（`waybar`、`swaync`、`hyprpaper`、`hypridle`、`fcitx5-daemon`）通过 `BindsTo=` / `PartOf=` 绑定到该 target
+- 所有守护进程（`waybar`、`swaync`、`hyprpaper`、`hypridle`、`fcitx5-daemon`、`power-profile`、`hyprland-guard`）通过 `BindsTo=` / `PartOf=` 绑定到该 target；`mpv-profile-watch` 只需要 D-Bus，挂在 `default.target`
 
-蓝牙是**按需启动**以省电的：空闲时 `bluetooth.service` 和无线电都是关闭的。waybar 的 `bt-toggle` 自定义模块显示当前状态，点击它会启动 `bluetooth.service`（经由 `install.sh` 配置的免密 sudoers 规则）、打开适配器并启动 `blueman-manager`。不使用托盘小程序（`blueman-applet`）。
+蓝牙是**按需启动**以省电的：空闲时 `bluetooth.service` 和无线电都是关闭的。waybar 的蓝牙模块（`dotctl status bt`）显示当前状态，点击它会启动 `bluetooth.service`（经由 `install.sh` 配置的免密 sudoers 规则）、打开适配器并启动 `blueman-manager`。不使用托盘小程序（`blueman-applet`）。
 
 因此 Hyprland 退出时，所有服务会被自动清理。
 
@@ -43,6 +43,8 @@ git clone https://github.com/pjh456/dotfiles ~/dotfiles
 
 - 把已存在的 dotfiles 备份到 `~/.dotfiles-backup-<时间戳>/`，然后以
   普通文件拷贝的方式把 `etc/` 里的全部内容放进 `$HOME`；
+- 把固定版本的 `dotctl` release 装到 `~/.local/bin`（校验 checksum；
+  `--no-cli` 跳过，`--cli-from-source` 强制本地编译）；
 - 启用主程序已安装的会话服务（`systemctl --user`）；
 - 写入按需蓝牙的 NOPASSWD sudoers 规则，并记住已写入，重跑时不再要求输入密码；
 - 注释掉 `/etc/acpi/handler.sh` 里的音量/亮度命令（仅当装了 `acpid`），
@@ -55,6 +57,9 @@ git clone https://github.com/pjh456/dotfiles ~/dotfiles
 | `--packages` | 额外安装所需软件包——官方源走 `pacman`（Arch）或 `apt`（Debian），若检测到 `yay`/`paru`/`buttercup` 则 AUR 走它们；Debian 上改为打印需要手动编译的清单。清单位于 [`packages/`](../packages/)，由 CI 对着实时数据库校验。 |
 | `--no-<pkg>` | 配合 `--packages` 使用：不安装软件包 `<pkg>`。包名必须存在于当前发行版的清单中，否则报错。 |
 | `--restore [DIR]` | 回滚一次部署：删除已部署的文件（按 `~/.dotfiles-deployed` 清单），并从 `DIR` 还原备份的原始文件（默认：最新的 `~/.dotfiles-backup-*`）。systemd 启用、sudoers 规则和 acpid 改动不会回滚。 |
+| `--with-cli` | 安装/更新 `dotctl`（默认）。下载固定版本的 `dotctl-v<version>` release 并校验 `SHA256SUMS`，必要时回退到 `cargo build`。 |
+| `--cli-from-source` | 不走 release，本地编译 `dotctl`。 |
+| `--no-cli` | 不安装/更新 `dotctl`。 |
 | `--no-systemd` | 跳过 `daemon-reload` 和会话服务启用。 |
 | `--no-sudo` | 跳过系统级调整：按需蓝牙的 sudoers 规则、acpid 多媒体键去重。 |
 | `-h`, `--help` | 显示用法。 |
@@ -74,7 +79,7 @@ Debian 稳定版（trixie）的 main 里还没有 hyprland——请用 testing�
 加上 trixie-backports。两个细节：
 
 - `tlp` 与 `power-profiles-daemon` 冲突。waybar 的
-  `power-profiles-daemon` 模块（以及 `power-mode` 脚本）需要
+  `power-profiles-daemon` 模块（以及 `dotctl watch power` 服务）需要
   `net.hadess.PowerProfiles` D-Bus 接口，tlp 1.10 已内置该功能——在
   `/etc/tlp.conf` 里设置 `TLP_PD_ENABLE=1` 启用。
 - Arch 的 `fcitx5-gtk` 在 Debian 上叫 `fcitx5-frontend-gtk3` /
@@ -141,41 +146,55 @@ start-hyprland
 | `Super + R`           | 缩放模式（方向键调整大小）                     |
 | `XF86Audio*` / `XF86MonBrightness*` | 音量 / 亮度 OSD 弹窗（swaync） |
 
-## 辅助脚本
+## dotctl
 
-全部在 `~/.local/bin/` 下，分两类：自己手动跑的，和配置自动调用的。
+桌面辅助工具现在是 `~/.local/bin/dotctl` 一个 Rust 二进制。Waybar、Hyprland
+快捷键、hypridle 和 systemd user unit 都调它，旧的 shell 脚本已删除。
 
-### 手动运行
+`install.sh` 会下载固定版本的 `dotctl-v<version>` release（x86_64 musl 静态
+二进制），校验 `SHA256SUMS`，下载不可用时回退到本地 `cargo build`。
+`--no-cli` 跳过安装，`--cli-from-source` 强制本地编译。
 
-| 脚本 | 作用 |
+热路径不再 fork 一堆进程：`status temp` 直接读 hwmon（约 0.5ms，旧的
+`sensors | awk` 约 20ms）；`status bt` 不再调用 `bluetoothctl`（服务停止时
+它可能卡几分钟）；mpv / power watcher 改成事件驱动而不是轮询。
+
+### 手动命令
+
+| 命令 | 作用 |
 |---|---|
-| `setwp <图片>` | 从任意文件设壁纸：`setwp ~/Pictures/wall.jpg`（走 `hyprpaper`，运行中的合成器直接生效） |
-| `unsetwp` | 切回纯黑壁纸（保留 hyprpaper 进程） |
-| `powermenu` | Rofi 电源菜单——`Super + L` 也是调它，再按一次关闭 |
-| `clipmenu` | 脚本化剪贴板历史：`Super + V` 那条流水线的脚本版，外加"已复制"通知和 `--paste-once` |
-| `rofi-toggle <参数>` | 切换任意 rofi 菜单（`rofi-toggle -show drun`）：没开就开，已开就关 |
-| `emoji` | 彩色 emoji 选择器——即 `Super + .`；有 `wtype` 时直接键入焦点窗口；QQ 不认合成的 emoji 按键，所以那里改成复制后发送 Ctrl+V。没装 `wtype` 时留在剪贴板里 |
-| `power-mode [status\|next]` | 命令行切换电源 profile（`power-mode next`）；状态栏改用 waybar 自带的 `power-profiles-daemon` 模块 |
-| `waybar-reload` | 改完 waybar 配置后重启它（由 systemd 托管时走 `systemctl --user restart waybar.service`）；`Super + F5` 会连同 Hyprland 一起重载 |
-| `mpv-profile-switch [profile]` | 立即把 mpv profile 同步一次——把 `mpv.conf.{PRF,BAL,SAV}` 链接成 `mpv.conf`。不带参数时问 TLP；`mpv-profile-watch` 会把 D-Bus 里的值直接传进来 |
-| `power-profile-daemon` | 在终端里长跑：inotify 监听插拔电源事件，经 D-Bus power-profiles 接口切换 `performance` / `power-saver` |
-| `on-battery` | 仅在电池供电时返回 0，用于一行命令：`on-battery && mpv-profile-switch` |
+| `dotctl wallpaper set <图片>` | 从任意文件设壁纸（走 `hyprpaper`） |
+| `dotctl wallpaper unset` | 切回纯黑壁纸（保留 hyprpaper 进程） |
+| `dotctl menu power` | Rofi 电源菜单——`Super + L` 也是调它，再按一次关闭 |
+| `dotctl menu clipboard` | Rofi 剪贴板历史，复制后带通知和 `--paste-once` |
+| `dotctl menu emoji [--paste]` | 彩色 emoji 选择器；`--paste` 复制并发送 Ctrl+V（QQ 用） |
+| `dotctl rofi -show drun` | 切换任意 rofi 菜单：没开就开，已开就关 |
+| `dotctl mpv [profile]` | 立即把 `mpv.conf.{PRF,BAL,SAV}` 链接成 `mpv.conf` |
+| `dotctl reload waybar` | 改完 waybar 配置后重启它 |
+| `dotctl on-battery` | 仅在电池供电时返回 0（给 hypridle 用） |
+| `dotctl doctor` | 检查 hwmon、D-Bus、Hyprland socket 和外部命令 |
+| `dotctl guard --once` | 探测一次 Hyprland 是否活着；不带 `--once` 常驻镜像日志 |
 
-### 配置自动调用（不要手动跑）
+### 配置自动调用
 
-| 脚本 | 调用方 |
+| 命令 | 调用方 |
 |---|---|
-| `bt-toggle [status\|toggle]` | waybar 蓝牙模块（5 秒轮询 + 点击） |
-| `temperature` | waybar 温度模块 |
-| `weather` | waybar 天气模块（30 分钟轮询）；同时把 7 天预报写进缓存 |
-| `weather-forecast` | 点击 waybar 天气图标或按 `Super + W` 时用 rofi 展示缓存里的 7 天预报 |
-| `mpv-profile-watch` | user service；`net.hadess.PowerProfiles.ActiveProfile` 变化时重跑 `mpv-profile-switch`（每 10 秒读一次属性，单次约 2ms，而不是 `tlp-stat` 的约 90ms） |
-| `osd-ctl volume up\|down\|mute`、`osd-ctl brightness up\|down` | Hyprland 多媒体键 |
+| `dotctl status temp` | Waybar 温度模块（5 秒轮询） |
+| `dotctl status bt`、`dotctl bt toggle` | Waybar 蓝牙模块（5 秒轮询 + 点击） |
+| `dotctl weather`、`dotctl weather --forecast` | Waybar 天气模块（30 分钟轮询）/ `Super + W` |
+| `dotctl osd volume up\|down\|mute`、`dotctl osd brightness up\|down` | Hyprland 多媒体键 |
+| `dotctl menu clipboard\|emoji\|power\|launcher` | `Super + V`、`Super + .`、`Super + L`、`Super + Space` |
+| `dotctl watch mpv` | `mpv-profile-watch.service`（zbus PropertiesChanged） |
+| `dotctl watch power` | `power-profile.service`（inotify 监听 AC 状态） |
+| `dotctl guard` | `hyprland-guard.service`（日志镜像 + 卡死抓栈） |
 
 ## 文件结构
 
 ```
 ├── install.sh                 # 部署 / 回滚入口
+├── dotctl/                    # Rust CLI（单个静态 musl 二进制）
+│   ├── Cargo.toml
+│   └── src/
 ├── docs/
 │   └── README-zh.md           # 中文文档（本文件）
 ├── packages/
@@ -195,15 +214,12 @@ start-hyprland
 │   │   ├── btop/              # Catppuccin 主题、透明背景
 │   │   ├── hypr/              # hyprland.lua（+anim/keys/notify）、hypridle、hyprlock、hyprpaper、scripts/init.sh
 │   │   ├── waybar/            # 状态栏配置与样式
-│   │   ├── rofi/               # 启动器配置
-│   │   ├── swaync/             # 通知中心配置与样式
-│   │   ├── fcitx5/             # 输入法配置
-│   │   ├── foot/               # 终端配置
-│   │   └── systemd/user/       # 会话服务（*.wants/ 不入库）
-│   ├── .local/bin/            # powermenu、bt-toggle、power-mode、temperature、
-│   │                         # weather、clipmenu、setwp、waybar-reload、
-│   │                         # osd-ctl、mpv-profile-{watch,switch}、on-battery 等
+│   │   ├── rofi/              # 启动器配置
+│   │   ├── swaync/            # 通知中心配置与样式
+│   │   ├── fcitx5/            # 输入法配置
+│   │   ├── foot/              # 终端配置
+│   │   └── systemd/user/      # 会话服务（*.wants/ 不入库）
 │   └── .local/share/
 │       └── fcitx5/themes/     # 自包含的 fcitx5 主题（svg + png）
-└── .github/workflows/ci.yml   # shellcheck、JSON 校验、包名解析、干跑
+└── .github/workflows/         # shellcheck/JSON/安装测试 + dotctl CI/release
 ```

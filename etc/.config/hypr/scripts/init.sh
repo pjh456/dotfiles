@@ -39,10 +39,10 @@ systemctl --user restart xdg-desktop-portal-gtk.service 2>/dev/null
 systemctl --user restart xdg-desktop-portal-hyprland.service 2>/dev/null
 systemctl --user restart xdg-desktop-portal.service 2>/dev/null
 
-# Restore the last wallpaper picked with setwp (also used by hyprlock).
+# Restore the last wallpaper picked with dotctl wallpaper set (also used by hyprlock).
 wallpaper="${XDG_CACHE_HOME:-$HOME/.cache}/current_wallpaper"
 if [ -f "$wallpaper" ]; then
-    "$HOME/.local/bin/setwp" "$wallpaper" >/dev/null 2>&1
+    "$HOME/.local/bin/dotctl" wallpaper set "$wallpaper" >/dev/null 2>&1
 fi
 
 pgrep -x wl-paste >/dev/null || wl-paste --type text --watch cliphist store 2>/dev/null &
