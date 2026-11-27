@@ -1,12 +1,11 @@
 configuration {
-  modi: "drun,calc,emoji";
+  modi: "drun,calc";
   font: "JetBrainsMono Nerd Font 14";
   icon-theme: "Papirus-Dark";
   show-icons: true;
   drun-display-format: "{name}";
   display-drun: "   Apps";
   display-calc: "   Calc";
-  display-emoji: " 󰞅  Emoji";
 }
 
 * {

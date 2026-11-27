@@ -132,6 +132,7 @@ enabling, the sudoers rule.
 | `Super + Return`      | Open foot terminal                               |
 | `Super + Q`           | Close window                                     |
 | `Super + Space`       | Rofi application launcher                        |
+| `Super + .`           | Color emoji picker (inserts into the focused window; copies to the clipboard when `wtype` is not installed) |
 | `Super + L`           | Power menu (shutdown/reboot/lock/suspend/logout) |
 | `Alt + Tab`           | Hyprswitch window switcher                       |
 | `Super + V`           | Clipboard history (cliphist + rofi)              |
@@ -160,6 +161,7 @@ configs invoke.
 | `powermenu` | Rofi power menu — also the `Super + L` binding; a second press closes it |
 | `clipmenu` | Scripted clipboard history: the `Super + V` pipeline, plus a "copied" notification and `--paste-once` |
 | `rofi-toggle <args>` | Toggle any rofi menu (`rofi-toggle -show drun`): opens it, or closes it when already open |
+| `emoji` | Color emoji picker — the `Super + .` binding. Types the emoji into the focused window with `wtype`, otherwise leaves it on the clipboard |
 | `power-mode [status\|next]` | Power profile from the CLI (`power-mode next`); the bar uses waybar's built-in `power-profiles-daemon` module |
 | `waybar-reload` | Restart waybar after editing its config (`systemctl --user restart waybar.service` when it runs under systemd); `Super + F5` calls it together with a Hyprland reload |
 | `mpv-profile-switch [profile]` | Force-sync the mpv profile now — links `mpv.conf.{PRF,BAL,SAV}` → `mpv.conf`. With no argument it asks TLP; `mpv-profile-watch` passes the D-Bus value straight in |

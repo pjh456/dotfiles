@@ -1,0 +1,28 @@
+#!/bin/dash
+# Color emoji picker (Super + .). rofi-emoji renders every row through Pango,
+# so the glyphs are in color as soon as a color emoji font is installed
+# (noto-fonts-emoji). A second press closes the open picker instead of failing.
+
+if pgrep -x rofi >/dev/null 2>&1; then
+    pkill -x rofi
+    exit 0
+fi
+
+# With wtype (virtual-keyboard protocol) the selection is typed straight into
+# the focused window, like Win+.; without it rofi-emoji falls back to
+# putting the emoji on the clipboard, ready for Ctrl+V.
+mode=copy
+if command -v wtype >/dev/null 2>&1; then
+    mode=insert
+fi
+
+exec rofi -modi emoji -show emoji \
+    -emoji-mode "$mode" \
+    -emoji-format '<span size="x-large">{emoji}</span>   <span foreground="#bac2de">{name}</span>' \
+    -p "  Emoji" \
+    -theme-str 'window { width: 560px; }
+                /* Only one mode is enabled: drop the tab bar. */
+                mainbox { children: [inputbar, listview]; }
+                listview { lines: 10; columns: 1; spacing: 4px; }
+                element { padding: 8px 12px; border-radius: 10px; }
+                element selected.normal { background-color: #313244cc; text-color: #cdd6f4; border: 1px; border-color: #89b4fa66; }'

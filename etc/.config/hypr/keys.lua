@@ -10,6 +10,10 @@ hl.bind(mainMod .. " + code:9", hl.dsp.exit())
 
 hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd("~/.local/bin/rofi-toggle -show drun"))
 
+-- Color emoji picker (Windows Win+.): inserts into the focused window when
+-- wtype is installed, otherwise copies the emoji and asks for Ctrl+V.
+hl.bind(mainMod .. " + period", hl.dsp.exec_cmd("~/.local/bin/emoji"))
+
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("/home/pjh123/.local/bin/powermenu"))
 
 hl.bind("ALT + Tab", hl.dsp.exec_cmd("hyprswitch simple"))

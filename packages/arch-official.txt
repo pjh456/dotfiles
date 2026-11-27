@@ -3,6 +3,7 @@ hyprland
 waybar
 foot
 rofi
+rofi-emoji
 swaync
 hypridle
 hyprlock
@@ -12,6 +13,7 @@ fcitx5-chinese-addons
 fcitx5-gtk
 cliphist
 wl-clipboard
+wtype
 grim
 slurp
 blueman
@@ -19,6 +21,7 @@ lm_sensors
 tlp-pd
 ttf-jetbrains-mono-nerd
 noto-fonts-cjk
+noto-fonts-emoji
 papirus-icon-theme
 tlp
 pass
