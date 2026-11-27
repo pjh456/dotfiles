@@ -84,21 +84,15 @@ window#waybar {
 }
 
 #workspaces button {
-  /* Fixed slot for every workspace. The active state used to add 10px of
-     horizontal padding: GTK animated the width, snapped the last ~2px when the
-     transition ended (it re-measures the label with the final style), and the
-     growing pill changed the module width so the rest of the bar shifted on
-     every switch. Same-size buttons + a colour-only transition remove both.
-     The inactive state carries a fully transparent copy of the gradient so GTK
-     cross-fades the two background-images instead of popping the colour in. */
-  padding: 0 9px;
+  padding: 0 8px;
   margin: 0 2px;
   background-color: rgba(69, 71, 90, 0.3);
   background-image: linear-gradient(135deg, rgba(137, 180, 250, 0), rgba(203, 166, 247, 0));
   color: #6c7086;
   border-radius: 7px;
-  min-width: 28px;
-  transition: background-color 0.25s cubic-bezier(0.23, 1, 0.32, 1),
+  min-width: 20px;
+  transition: min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 0.25s cubic-bezier(0.23, 1, 0.32, 1),
               background-image 0.25s cubic-bezier(0.23, 1, 0.32, 1),
               color 0.25s cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -114,6 +108,12 @@ window#waybar {
 }
 
 #workspaces button.active {
+  /* Grow via min-width, not padding. With a padding transition GTK floored the
+     animated value in the size request: the pill grew, stalled for ~150ms and
+     then snapped the last 1-2px when the transition ended — the stutter.
+     min-width is animated continuously by the layout, so the expansion is
+     smooth and only ~1px of rounding is left at the end. */
+  min-width: 38px;
   background-color: transparent;
   background-image: linear-gradient(135deg, #89b4fa, #cba6f7);
   color: #11111b;
