@@ -81,12 +81,14 @@ trap 'rm -f "$tmp"' EXIT
 while IFS='|' read -r d code tmax tmin pop _psum wind sr ss; do
     [ -z "$d" ] && continue
     set_wmo "$code"
-    dow=$(date -d "$d" +%a 2>/dev/null)
+    # %a is localised (zh_CN gives "一" too, but a mismatched locale would
+    # leave English names); map the ISO weekday number instead. The ideographic
+    # space keeps "一" the same width as the two-character 今天 / 明天.
+    wd=$(date -d "$d" +%u 2>/dev/null)
     md=$(date -d "$d" +%m/%d 2>/dev/null)
-
-    case "$dow" in
-        Mon) dow="一" ;; Tue) dow="二" ;; Wed) dow="三" ;; Thu) dow="四" ;;
-        Fri) dow="五" ;; Sat) dow="六" ;; Sun) dow="日" ;;
+    case "$wd" in
+        1) dow="一　" ;; 2) dow="二　" ;; 3) dow="三　" ;; 4) dow="四　" ;;
+        5) dow="五　" ;; 6) dow="六　" ;; 7) dow="日　" ;; *) dow="?　" ;;
     esac
 
     if [ "$d" = "$today" ]; then label="今天"; color="#89b4fa"
@@ -96,8 +98,15 @@ while IFS='|' read -r d code tmax tmin pop _psum wind sr ss; do
     sr_h=$(printf '%s' "$sr" | cut -dT -f2)
     ss_h=$(printf '%s' "$ss" | cut -dT -f2)
 
-    printf '<span foreground="%s" weight="bold">%s %s</span>  %s <span foreground="#a6adc8">%s</span>  <span foreground="#f9e2af">%s°</span> / <span foreground="#89b4fa">%s°</span>  <span foreground="#94e2d5">%s</span>%s  <span foreground="#9399b2">风 %skm/h  %s-%s</span>\n' \
-        "$color" "$label" "$md" "$icon" "$desc" "$tmax" "$tmin" "$pop" "%" "$wind" "$sr_h" "$ss_h" >> "$tmp"
+    # 等宽列：温度、概率、风速、日照都是变长数字，先四舍五入并按位补齐，
+    # 再把可变的中文天气描述放到行尾，这样每天的图标/数字才会严格对齐。
+    tmax_w=$(printf '%3s' "$(printf '%.0f' "$tmax")")
+    tmin_w=$(printf '%3s' "$(printf '%.0f' "$tmin")")
+    pop_w=$(printf '%3s' "$pop")
+    wind_w=$(printf '%3s' "$(printf '%.0f' "$wind")")
+
+    printf '<span foreground="%s" weight="bold">%s %s</span>  %s  <span foreground="#f9e2af">%s°</span> / <span foreground="#89b4fa">%s°</span>  <span foreground="#94e2d5">%s%%</span>  <span foreground="#9399b2">󰖝 %s km/h  %s-%s</span>  <span foreground="#a6adc8">%s</span>\n' \
+        "$color" "$label" "$md" "$icon" "$tmax_w" "$tmin_w" "$pop_w" "$wind_w" "$sr_h" "$ss_h" "$desc" >> "$tmp"
 
     idx=$((idx+1))
 done <<EOF
@@ -110,9 +119,11 @@ EOF
         "$PLACE" "$cur_icon $cur_desc" "$cur_t" "$cur_f" "$cur_h" "$cur_w"
     cat "$tmp"
 } | rofi -dmenu -markup-rows -p " 天气" \
-    -theme-str 'window { width: 700px; }
-                listview { lines: 8; columns: 1; }
-                element { padding: 6px 10px; }
+    -theme-str 'window { width: 780px; border-radius: 16px; border: 2px; border-color: #89b4fa55; background-color: #181825e6; }
+                mainbox { padding: 14px; spacing: 10px; }
+                listview { lines: 8; columns: 1; spacing: 4px; }
+                element { padding: 8px 14px; border-radius: 10px; }
                 element normal.normal { background-color: transparent; text-color: #cdd6f4; }
                 element alternate.normal { background-color: transparent; text-color: #cdd6f4; }
-                element-text { font: "JetBrainsMono Nerd Font 11"; }'
+                element selected.normal { background-color: #313244cc; text-color: #cdd6f4; border: 1px; border-color: #89b4fa66; }
+                element-text { font: "JetBrainsMono Nerd Font 12"; }'
