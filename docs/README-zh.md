@@ -44,7 +44,9 @@ git clone https://github.com/pjh456/dotfiles ~/dotfiles
 - 把已存在的 dotfiles 备份到 `~/.dotfiles-backup-<时间戳>/`，然后以
   普通文件拷贝的方式把 `etc/` 里的全部内容放进 `$HOME`；
 - 启用主程序已安装的会话服务（`systemctl --user`）；
-- 写入按需蓝牙的 NOPASSWD sudoers 规则。
+- 写入按需蓝牙的 NOPASSWD sudoers 规则；
+- 注释掉 `/etc/acpi/handler.sh` 里的音量/亮度命令（仅当装了 `acpid`），
+  避免 acpid 和 Hyprland 的多媒体键绑定对同一次按键各执行一遍。
 
 选项：
 
@@ -52,9 +54,9 @@ git clone https://github.com/pjh456/dotfiles ~/dotfiles
 |---|---|
 | `--packages` | 额外安装所需软件包——官方源走 `pacman`（Arch）或 `apt`（Debian），若检测到 `yay`/`paru`/`buttercup` 则 AUR 走它们；Debian 上改为打印需要手动编译的清单。清单位于 [`packages/`](../packages/)，由 CI 对着实时数据库校验。 |
 | `--no-<pkg>` | 配合 `--packages` 使用：不安装软件包 `<pkg>`。包名必须存在于当前发行版的清单中，否则报错。 |
-| `--restore [DIR]` | 回滚一次部署：删除已部署的文件（按 `~/.dotfiles-deployed` 清单），并从 `DIR` 还原备份的原始文件（默认：最新的 `~/.dotfiles-backup-*`）。systemd 启用和 sudoers 规则不会回滚。 |
+| `--restore [DIR]` | 回滚一次部署：删除已部署的文件（按 `~/.dotfiles-deployed` 清单），并从 `DIR` 还原备份的原始文件（默认：最新的 `~/.dotfiles-backup-*`）。systemd 启用、sudoers 规则和 acpid 改动不会回滚。 |
 | `--no-systemd` | 跳过 `daemon-reload` 和会话服务启用。 |
-| `--no-sudo` | 跳过按需蓝牙的 sudoers 规则。 |
+| `--no-sudo` | 跳过系统级调整：按需蓝牙的 sudoers 规则、acpid 多媒体键去重。 |
 | `-h`, `--help` | 显示用法。 |
 
 伴生包会连带排除：`--no-tlp` 同时排除 `tlp-pd`。

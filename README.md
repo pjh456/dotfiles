@@ -46,7 +46,10 @@ By default `install.sh`:
 - backs up any existing dotfiles to `~/.dotfiles-backup-<timestamp>/`, then
   copies everything from `etc/` into `$HOME` as regular files;
 - enables the session services whose binaries are installed (`systemctl --user`);
-- writes the NOPASSWD sudoers rule for on-demand bluetooth.
+- writes the NOPASSWD sudoers rule for on-demand bluetooth;
+- comments out the volume/brightness commands in `/etc/acpi/handler.sh` (only
+  if `acpid` is installed), so acpid and Hyprland's media-key binds don't run
+  the same key twice.
 
 Options:
 
@@ -54,9 +57,9 @@ Options:
 |---|---|
 | `--packages` | Also install the required packages — official repos via `pacman` (Arch) or `apt` (Debian), AUR via your `yay`/`paru`/`buttercup` if one is present; on Debian the manual-build packages are printed instead. Lists live in [`packages/`](packages/), validated by CI against the live databases. |
 | `--no-<pkg>` | With `--packages`: do not install package `<pkg>`. The name must exist in the detected distro's package lists — unknown names are rejected. |
-| `--restore [DIR]` | Undo a deployment: remove the deployed files (tracked in `~/.dotfiles-deployed`) and restore the backed-up originals from `DIR` (default: newest `~/.dotfiles-backup-*`). Systemd enabling and the sudoers rule are not rolled back. |
+| `--restore [DIR]` | Undo a deployment: remove the deployed files (tracked in `~/.dotfiles-deployed`) and restore the backed-up originals from `DIR` (default: newest `~/.dotfiles-backup-*`). Systemd enabling, the sudoers rule and the acpid patch are not rolled back. |
 | `--no-systemd` | Skip `daemon-reload` and enabling the session services. |
-| `--no-sudo` | Skip the on-demand bluetooth sudoers rule. |
+| `--no-sudo` | Skip the system-level tweaks: the on-demand bluetooth sudoers rule and the acpid media-key patch. |
 | `-h`, `--help` | Show usage. |
 
 Companion packages are excluded together: `--no-tlp` also excludes

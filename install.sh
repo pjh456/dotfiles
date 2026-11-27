@@ -38,7 +38,8 @@ Options:
                       backed-up originals from DIR (default: newest
                       ~/.dotfiles-backup-*)
   --no-systemd        skip daemon-reload / service enabling
-  --no-sudo           skip the bluetooth sudoers rule
+  --no-sudo           skip the system-level tweaks (bluetooth sudoers rule,
+                      acpid media-key patch)
   --no-<pkg>          do not install package <pkg> (requires --packages; the
                       name must exist in the detected distro's package lists)
   -h, --help          show this help
@@ -112,7 +113,7 @@ if [ "$with_restore" -eq 1 ]; then
 
   rm -f "$manifest_file"
   echo "restored $RESTORED file(s) from $restore_dir (deployed files removed)"
-  echo "note: systemd enabling and the sudoers rule are not rolled back"
+  echo "note: systemd enabling, the sudoers rule and the acpid media-key patch are not rolled back"
   exit 0
 fi
 
@@ -317,6 +318,49 @@ if [ "$with_sudo" -eq 1 ]; then
   else
     echo "note: sudo not available, skipped sudoers rule"
   fi
+fi
+
+# --- 4. keep acpid off the media keys ---------------------------------------
+# Hyprland (keys.lua -> osd-ctl) owns volume/brightness. acpid's input layer
+# still turns the same keycodes into button/mute, button/volumeup, ... and
+# runs wpctl/brightnessctl a second time, so mute cancels itself out and
+# volume/brightness step twice. Comment the command lines out and keep the
+# logger lines, so `journalctl -g 'ACPI:'` still shows what arrives.
+acpi_handler="${ACPI_HANDLER:-/etc/acpi/handler.sh}"
+if [ "$with_sudo" -eq 1 ] && [ -f "$acpi_handler" ]; then
+  acpi_patched="$(mktemp)"
+  awk '
+    /^[[:space:]]*#/ { print; next }
+    {
+      cmd = $0
+      sub(/^[[:space:]]*/, "", cmd)
+      if (cmd == "/usr/local/bin/volume-mute" ||
+          cmd ~ /^\/usr\/local\/bin\/volume-control 1%[+-]$/ ||
+          cmd ~ /^\/usr\/bin\/brightnessctl set [+]?1%-?$/) {
+        match($0, /^[[:space:]]*/)
+        printf "%s# %s   # disabled: Hyprland keys.lua/osd-ctl owns this key\n", substr($0, 1, RLENGTH), cmd
+        next
+      }
+      print
+    }
+  ' "$acpi_handler" >"$acpi_patched"
+
+  if cmp -s "$acpi_handler" "$acpi_patched"; then
+    echo "acpid already leaves the media keys alone: $acpi_handler"
+  elif ! bash -n "$acpi_patched"; then
+    echo "warning: patched $acpi_handler would not parse; left untouched" >&2
+  else
+    acpi_sudo=()
+    [ "$(id -u)" -ne 0 ] && [ ! -w "$acpi_handler" ] && acpi_sudo=(sudo)
+    acpi_backup="$acpi_handler.bak-$(date +%Y%m%d-%H%M%S)"
+    if "${acpi_sudo[@]}" cp -a "$acpi_handler" "$acpi_backup" &&
+      "${acpi_sudo[@]}" cp "$acpi_patched" "$acpi_handler"; then
+      echo "acpid no longer acts on the media keys (backup: $acpi_backup)"
+    else
+      echo "warning: could not patch $acpi_handler (media keys may act twice)" >&2
+    fi
+  fi
+  rm -f "$acpi_patched"
 fi
 
 echo "done. open a new shell (or: source ~/.bashrc)"
