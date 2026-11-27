@@ -48,3 +48,20 @@ jobs:
             dist/dotctl-x86_64-unknown-linux-musl.tar.gz
             dist/SHA256SUMS
           generate_release_notes: true
+
+  smoke:
+    needs: build
+    runs-on: ubuntu-latest
+    container: archlinux/archlinux:latest
+    steps:
+      - name: Download and run the published asset
+        run: |
+          set -euo pipefail
+          pacman -Sy --noconfirm curl file
+          base="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}"
+          curl -fsSLO "$base/dotctl-x86_64-unknown-linux-musl.tar.gz"
+          curl -fsSLO "$base/SHA256SUMS"
+          sha256sum -c SHA256SUMS
+          tar -xzf dotctl-x86_64-unknown-linux-musl.tar.gz
+          file dotctl
+          ./dotctl --version
