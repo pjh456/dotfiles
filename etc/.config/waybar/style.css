@@ -22,6 +22,42 @@ window#waybar {
   margin: 0 12px 6px 12px;
 }
 
+/* Every module is its own small pill; no hard separators. */
+#custom-weather,
+#clock,
+#pulseaudio,
+#backlight,
+#custom-uptime,
+#custom-notification,
+#cpu,
+#memory,
+#disk,
+#custom-temperature,
+#network,
+#custom-bt-toggle,
+#power-profiles-daemon,
+#battery {
+  background-color: rgba(49, 50, 68, 0.55);
+  border-radius: 8px;
+  margin: 4px 3px;
+  padding: 0 12px;
+  transition: background-color 0.15s ease;
+}
+
+#pulseaudio:hover,
+#backlight:hover,
+#custom-notification:hover,
+#cpu:hover,
+#memory:hover,
+#disk:hover,
+#custom-temperature:hover,
+#network:hover,
+#custom-bt-toggle:hover,
+#power-profiles-daemon:hover,
+#battery:hover {
+  background-color: rgba(69, 71, 90, 0.8);
+}
+
 #custom-launcher {
   font-size: 16px;
   color: #89b4fa;
@@ -129,13 +165,11 @@ window#waybar {
 #custom-uptime {
   color: #6c7086;
   padding: 0 10px;
-  border-left: 1px solid rgba(69, 71, 90, 0.6);
   font-size: 12px;
 }
 
 #power-profiles-daemon {
   padding: 0 10px;
-  border-left: 1px solid rgba(69, 71, 90, 0.6);
 }
 
 #power-profiles-daemon.power-saver {
@@ -162,7 +196,6 @@ window#waybar {
 #custom-bt-toggle {
   color: #89b4fa;
   padding: 0 10px;
-  border-left: 1px solid rgba(69, 71, 90, 0.6);
 }
 
 #custom-bt-toggle.off {
@@ -180,7 +213,6 @@ window#waybar {
 #bluetooth {
   color: #89b4fa;
   padding: 0 10px;
-  border-left: 1px solid rgba(69, 71, 90, 0.6);
 }
 
 #bluetooth.disabled {
@@ -190,7 +222,6 @@ window#waybar {
 #pulseaudio {
   color: #cdd6f4;
   padding: 0 10px;
-  border-left: 1px solid rgba(69, 71, 90, 0.6);
 }
 
 #pulseaudio.muted {
@@ -200,31 +231,26 @@ window#waybar {
 #backlight {
   color: #f9e2af;
   padding: 0 10px;
-  border-left: 1px solid rgba(69, 71, 90, 0.6);
 }
 
 #cpu {
   color: #94e2d5;
   padding: 0 10px;
-  border-left: 1px solid rgba(69, 71, 90, 0.6);
 }
 
 #memory {
   color: #cba6f7;
   padding: 0 10px;
-  border-left: 1px solid rgba(69, 71, 90, 0.6);
 }
 
 #disk {
   color: #fab387;
   padding: 0 10px;
-  border-left: 1px solid rgba(69, 71, 90, 0.6);
 }
 
 #custom-temperature {
   color: #cdd6f4;
   padding: 0 10px;
-  border-left: 1px solid rgba(69, 71, 90, 0.6);
 }
 
 #custom-temperature.normal {
@@ -250,7 +276,6 @@ window#waybar {
 #battery {
   color: #a6e3a1;
   padding: 0 10px;
-  border-left: 1px solid rgba(69, 71, 90, 0.6);
 }
 
 #battery.warning {
