@@ -51,6 +51,7 @@
         "default": ["", "", ""]
       },
       "on-click": "pavucontrol",
+      "on-click-right": "$HOME/.local/bin/osd-ctl volume mute",
       "scroll-step": 5
     },
     "backlight": {
