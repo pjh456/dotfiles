@@ -9,15 +9,17 @@ window#waybar {
 }
 
 #waybar.top-bar {
-  background-color: rgba(30, 30, 46, 0.85);
-  border-radius: 0 0 10px 10px;
-  margin: 0 8px 4px 8px;
+  background-color: rgba(24, 24, 37, 0.78);
+  border: 1px solid rgba(137, 180, 250, 0.18);
+  border-radius: 12px;
+  margin: 6px 12px 0 12px;
 }
 
 #waybar.bottom-bar {
-  background-color: rgba(30, 30, 46, 0.85);
-  border-radius: 10px 10px 0 0;
-  margin: 4px 8px 0 8px;
+  background-color: rgba(24, 24, 37, 0.78);
+  border: 1px solid rgba(137, 180, 250, 0.18);
+  border-radius: 12px;
+  margin: 0 12px 6px 12px;
 }
 
 #custom-launcher {
