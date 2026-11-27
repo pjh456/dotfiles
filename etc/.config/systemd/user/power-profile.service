@@ -1,6 +1,7 @@
 [Unit]
 Description=Set the power profile from AC state
 After=hyprland-session.target
+PartOf=hyprland-session.target
 
 [Service]
 Type=simple
@@ -10,4 +11,3 @@ RestartSec=2
 
 [Install]
 WantedBy=hyprland-session.target
-PartOf=hyprland-session.target
