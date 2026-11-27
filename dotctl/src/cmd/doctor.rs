@@ -55,6 +55,8 @@ pub fn run() -> Result<()> {
         "gdb",
         "wtype",
         "bluetoothctl",
+        "curl",
+        "jq",
     ] {
         println!("  {:<16} {}", cmd, yes_no(have_cmd(cmd)));
     }

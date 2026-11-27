@@ -19,10 +19,6 @@ pub fn run(once: bool, state_dir: Option<PathBuf>) -> Result<()> {
         None => default_state_dir()?,
     };
     fs::create_dir_all(&state).with_context(|| format!("create {}", state.display()))?;
-    let Some(_lock) = lock(&state.join(".lock"))? else {
-        return Ok(());
-    };
-
     daemon::install_exit_handler()?;
     let runtime = runtime_dir();
 
@@ -36,6 +32,9 @@ pub fn run(once: bool, state_dir: Option<PathBuf>) -> Result<()> {
         bail!("Hyprland did not answer on {sig}");
     }
 
+    let Some(_lock) = lock(&state.join(".lock"))? else {
+        return Ok(());
+    };
     let mirror_state = state.clone();
     let mirror_runtime = runtime.clone();
     thread::spawn(move || mirror_logs(&mirror_runtime, &mirror_state));

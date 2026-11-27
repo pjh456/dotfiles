@@ -2,6 +2,7 @@ use std::env;
 use std::fs;
 use std::os::unix::fs::symlink;
 use std::path::PathBuf;
+use std::process::Command;
 
 use anyhow::{Context, Result};
 use futures_util::StreamExt;
@@ -11,7 +12,7 @@ use crate::{daemon, ppd};
 pub fn switch(profile: Option<&str>) -> Result<()> {
     let raw = match profile {
         Some(profile) => profile.to_owned(),
-        None => ppd::active_profile_now().unwrap_or_else(|_| "balanced".to_owned()),
+        None => current_profile(),
     };
     let target = target(&raw);
 
@@ -82,6 +83,33 @@ pub fn watch(once: bool) -> Result<()> {
     Ok(())
 }
 
+fn current_profile() -> String {
+    ppd::active_profile_now().unwrap_or_else(|_| {
+        tlp_profile()
+            .or_else(|| Some("balanced".to_owned()))
+            .unwrap()
+    })
+}
+
+fn tlp_profile() -> Option<String> {
+    let output = Command::new("tlp-stat").args(["-s"]).output().ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    parse_tlp_profile(&String::from_utf8_lossy(&output.stdout))
+}
+
+fn parse_tlp_profile(text: &str) -> Option<String> {
+    for line in text.lines() {
+        if !line.contains("TLP profile") {
+            continue;
+        }
+        let (_, value) = line.split_once('=')?;
+        return Some(value.trim().to_owned());
+    }
+    None
+}
+
 fn target(profile: &str) -> &'static str {
     let profile = profile.split('/').next().unwrap_or(profile);
     match profile {
@@ -94,6 +122,12 @@ fn target(profile: &str) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn parses_tlp_stat_profile() {
+        let text = "State = enabled\nTLP profile = performance/BAT\n";
+        assert_eq!(parse_tlp_profile(text).as_deref(), Some("performance/BAT"));
+    }
 
     #[test]
     fn maps_known_profile_names() {

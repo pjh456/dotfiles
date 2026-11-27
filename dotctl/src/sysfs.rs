@@ -13,8 +13,7 @@ fn read_i64(path: impl AsRef<Path>) -> Option<i64> {
 fn sensor_input(dir: &Path, label: &str) -> Option<i64> {
     // hwmon exposes tempN_label + tempN_input pairs. Walk the labels so we
     // pick the exact sensor the old `sensors | awk` pipeline used to select.
-    for entry in fs::read_dir(dir).ok()? {
-        let entry = entry.ok()?;
+    for entry in fs::read_dir(dir).ok()?.flatten() {
         let name = entry.file_name();
         let name = name.to_str()?;
         if !name.starts_with("temp") || !name.ends_with("_label") {
@@ -30,8 +29,7 @@ fn sensor_input(dir: &Path, label: &str) -> Option<i64> {
 }
 
 fn first_temp_input(dir: &Path) -> Option<i64> {
-    for entry in fs::read_dir(dir).ok()? {
-        let entry = entry.ok()?;
+    for entry in fs::read_dir(dir).ok()?.flatten() {
         let name = entry.file_name();
         let name = name.to_str()?;
         if name.starts_with("temp")

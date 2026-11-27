@@ -53,7 +53,11 @@ pub fn brightness(action: BrightnessAction) -> Result<()> {
         BrightnessAction::Up => format!("{STEP}+"),
         BrightnessAction::Down => format!("{STEP}-"),
     };
-    run(Command::new("brightnessctl").args(["set", &step]))?;
+    if let Err(err) = run(Command::new("brightnessctl").args(["set", &step])) {
+        // A missing udev rule or the video group is common; still show the
+        // current value instead of leaving the keypress silent.
+        eprintln!("dotctl: could not change brightness: {err:#}");
+    }
 
     let pct = backlight_percent()
         .or_else(brightnessctl_percent)
