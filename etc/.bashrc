@@ -30,7 +30,7 @@ alias ssh='TERM=xterm-256color ssh'
 eval "$(fzf --bash)"
 eval "$(thefuck --alias)"
 
-alias qq='/opt/QQ/qq'
+alias qq='linuxqq'
 alias rm='trash-put'
 tldr() {
   if [[ "$1" == "--update" || "$1" == "-u" ]]; then
