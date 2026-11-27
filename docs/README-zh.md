@@ -19,6 +19,17 @@
 
 因此 Hyprland 退出时，所有服务会被自动清理。
 
+### Wayland 原生策略
+
+能跑 Wayland 的都跑 Wayland，让弹窗尺寸/位置由合成器统一管理，而不是 XWayland：
+
+- Qt：`QT_QPA_PLATFORM=wayland;xcb`
+- GTK3：`GDK_BACKEND=wayland`（Thunar、pavucontrol、zathura、portal 文件选择窗）；
+  `init.sh` 会把它导入 systemd/D-Bus 激活环境
+- Firefox：`MOZ_ENABLE_WAYLAND=1`；Chromium：`chrome-flags.conf`；
+  QQ：`qq-flags.conf`；其他 Electron：`ELECTRON_OZONE_PLATFORM_HINT=auto`
+- Steam/Proton、Wine 和少数 SDL 游戏保持 XWayland（这是有意的）。
+
 ## 安装
 
 已在 Arch / CachyOS 和 Debian（testing）上验证。

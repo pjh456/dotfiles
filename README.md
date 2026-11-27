@@ -20,6 +20,18 @@ Bluetooth is **on-demand** to save battery: `bluetooth.service` and the radio ar
 
 This means when Hyprland exits, all services are cleaned up automatically.
 
+### Wayland-native policy
+
+Everything that can run on Wayland does, so dialogs and popups are sized and
+positioned by the compositor instead of XWayland:
+
+- Qt: `QT_QPA_PLATFORM=wayland;xcb`
+- GTK3: `GDK_BACKEND=wayland` (Thunar, pavucontrol, zathura, portal dialogs);
+  also imported into the systemd/D-Bus activation environment by `init.sh`
+- Firefox: `MOZ_ENABLE_WAYLAND=1`; Chromium: `chrome-flags.conf`;
+  QQ: `qq-flags.conf`; other Electron apps: `ELECTRON_OZONE_PLATFORM_HINT=auto`
+- Steam/Proton, Wine and a few SDL games intentionally stay on XWayland.
+
 ## Installation
 
 Tested on Arch / CachyOS and Debian (testing).
