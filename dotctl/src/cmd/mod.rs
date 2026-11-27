@@ -3,8 +3,8 @@ mod status;
 
 use anyhow::Result;
 
-use crate::cli::{BtAction, Cli, Command, OsdTarget, ReloadTarget, WallpaperAction};
-use crate::{bluez, osd, power, reload, wallpaper};
+use crate::cli::{BtAction, Cli, Command, MenuKind, OsdTarget, ReloadTarget, WallpaperAction};
+use crate::{bluez, menu, osd, power, reload, rofi, wallpaper, weather};
 
 pub fn run(cli: Cli) -> Result<()> {
     match cli.command {
@@ -30,6 +30,22 @@ pub fn run(cli: Cli) -> Result<()> {
         Command::Reload { target } => match target {
             ReloadTarget::Waybar => reload::waybar(),
         },
+        Command::Rofi { args } => rofi::toggle(&args),
+        Command::Menu { kind } => match kind {
+            MenuKind::Clipboard => menu::clipboard(),
+            MenuKind::Emoji { paste } => menu::emoji(paste),
+            MenuKind::Power => menu::power(),
+            MenuKind::Launcher => menu::launcher(),
+        },
+        Command::Weather { forecast, refresh } => {
+            if refresh {
+                weather::refresh()
+            } else if forecast {
+                weather::forecast()
+            } else {
+                weather::status()
+            }
+        }
         Command::Doctor => doctor::run(),
     }
 }

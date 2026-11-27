@@ -49,6 +49,26 @@ pub enum Command {
         target: ReloadTarget,
     },
 
+    /// Toggle a rofi menu (closes it when already open)
+    Rofi {
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+
+    /// Scripted rofi menus
+    Menu {
+        #[command(subcommand)]
+        kind: MenuKind,
+    },
+
+    /// Waybar weather status, or the 7-day rofi forecast
+    Weather {
+        #[arg(long)]
+        forecast: bool,
+        #[arg(long, hide = true)]
+        refresh: bool,
+    },
+
     /// Check runtime dependencies and report what is missing
     Doctor,
 }
@@ -101,4 +121,15 @@ pub enum WallpaperAction {
 #[derive(Debug, Subcommand)]
 pub enum ReloadTarget {
     Waybar,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum MenuKind {
+    Clipboard,
+    Emoji {
+        #[arg(long)]
+        paste: bool,
+    },
+    Power,
+    Launcher,
 }

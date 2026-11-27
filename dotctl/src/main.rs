@@ -1,12 +1,16 @@
 mod bluez;
 mod cli;
 mod cmd;
+mod menu;
+mod notify;
 mod osd;
 mod power;
 mod reload;
+mod rofi;
 mod sysfs;
 mod wallpaper;
 mod waybar;
+mod weather;
 
 use clap::Parser;
 
