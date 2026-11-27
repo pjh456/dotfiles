@@ -20,7 +20,10 @@ hl.bind("ALT + Tab", hl.dsp.exec_cmd("hyprswitch simple"))
 
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("~/.local/bin/clipmenu"))
 
-hl.bind(mainMod .. " + T", hl.dsp.window.float())
+-- Weather: same popup as clicking the top-left waybar weather module.
+-- Waybar tooltips cannot be triggered from a keybind, so this opens the
+-- cached 7-day rofi forecast instead.
+hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("~/.local/bin/weather-forecast"))
 
 hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("swaync-client -t -sw"))
 

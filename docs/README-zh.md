@@ -130,7 +130,7 @@ start-hyprland
 | `Super + L`           | 电源菜单（关机/重启/锁屏/休眠/注销）           |
 | `Alt + Tab`           | Hyprswitch 窗口切换                            |
 | `Super + V`           | 剪贴板历史（cliphist + rofi）                  |
-| `Super + T`           | 切换浮动                                       |
+| `Super + W`           | 天气弹窗（与点击左上角 Waybar 天气模块相同的 7 天预报） |
 | `Super + N`           | 切换通知中心（swaync）                         |
 | `Super + F5`          | 重载 Hyprland + 重启 Waybar                    |
 | `Ctrl + Alt + A`      | 区域截图（grim + slurp）                       |
@@ -168,7 +168,7 @@ start-hyprland
 | `bt-toggle [status\|toggle]` | waybar 蓝牙模块（5 秒轮询 + 点击） |
 | `temperature` | waybar 温度模块 |
 | `weather` | waybar 天气模块（30 分钟轮询）；同时把 7 天预报写进缓存 |
-| `weather-forecast` | 点击 waybar 天气图标时用 rofi 展示缓存里的 7 天预报 |
+| `weather-forecast` | 点击 waybar 天气图标或按 `Super + W` 时用 rofi 展示缓存里的 7 天预报 |
 | `mpv-profile-watch` | user service；`net.hadess.PowerProfiles.ActiveProfile` 变化时重跑 `mpv-profile-switch`（每 10 秒读一次属性，单次约 2ms，而不是 `tlp-stat` 的约 90ms） |
 | `osd-ctl volume up\|down\|mute`、`osd-ctl brightness up\|down` | Hyprland 多媒体键 |
 

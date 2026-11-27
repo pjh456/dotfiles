@@ -137,7 +137,7 @@ enabling, the sudoers rule.
 | `Super + L`           | Power menu (shutdown/reboot/lock/suspend/logout) |
 | `Alt + Tab`           | Hyprswitch window switcher                       |
 | `Super + V`           | Clipboard history (cliphist + rofi)              |
-| `Super + T`           | Toggle floating                                  |
+| `Super + W`           | Weather popup (same 7-day forecast as clicking the top-left Waybar module) |
 | `Super + N`           | Toggle notification center (swaync)              |
 | `Super + F5`          | Reload Hyprland + restart Waybar                 |
 | `Ctrl + Alt + A`      | Screenshot region (grim + slurp)                 |
@@ -176,7 +176,7 @@ configs invoke.
 | `bt-toggle [status\|toggle]` | waybar bluetooth module (5s poll + click) |
 | `temperature` | waybar temperature module |
 | `weather` | waybar weather module (30 min poll); also caches the 7-day forecast |
-| `weather-forecast` | click on the waybar weather module; renders the cached forecast with rofi |
+| `weather-forecast` | click on the waybar weather module or `Super + W`; renders the cached forecast with rofi |
 | `mpv-profile-watch` | user service; re-runs `mpv-profile-switch` when `net.hadess.PowerProfiles.ActiveProfile` changes (reads the property every 10s: ~2ms, not `tlp-stat`'s ~90ms) |
 | `osd-ctl volume up\|down\|mute`, `osd-ctl brightness up\|down` | Hyprland media keys |
 
