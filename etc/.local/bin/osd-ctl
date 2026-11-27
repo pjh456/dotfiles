@@ -2,20 +2,6 @@
 # Transient OSD for volume/brightness: a swaync notification carrying a
 # progress-bar hint. No extra daemon needed.
 
-# Debounce: holding the mute key makes the kernel autorepeat press/release
-# pairs (~400ms apart), and each pair looks like a fresh tap. Refresh the
-# stamp on every call and ignore anything within 500ms, so one physical
-# press/held key results in a single toggle.
-if [ "$1" = volume ] && [ "$2" = mute ]; then
-    stamp="${XDG_RUNTIME_DIR:-/tmp}/osd-ctl-mute.stamp"
-    now=$(date +%s%N)
-    last=$(cat "$stamp" 2>/dev/null || echo 0)
-    printf '%s' "$now" > "$stamp"
-    if [ $((now - last)) -lt 500000000 ]; then
-        exit 0
-    fi
-fi
-
 notify() {
     notify-send -a osd \
         -h string:x-canonical-private-synchronous:osd \
