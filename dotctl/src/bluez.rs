@@ -1,7 +1,9 @@
 use std::process::Command;
+use std::thread;
 use std::time::Duration;
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail};
+use zbus::OwnedObjectPath;
 use zbus::fdo::ManagedObjects;
 
 const SERVICE: &str = "bluetooth.service";
@@ -15,21 +17,8 @@ pub struct BtSnapshot {
 /// Query BlueZ in one `GetManagedObjects` call.
 pub fn snapshot() -> Result<BtSnapshot> {
     zbus::block_on(async {
-        let connection = zbus::connection::Builder::system()
-            .method_timeout(Duration::from_millis(800))
-            .build()
-            .await
-            .context("connect to the system bus")?;
-
-        let objects = zbus::fdo::ObjectManagerProxy::builder(&connection)
-            .destination("org.bluez")
-            .path("/")
-            .build()
-            .await?
-            .get_managed_objects()
-            .await
-            .context("org.bluez GetManagedObjects")?;
-
+        let connection = connect().await?;
+        let objects = managed_objects(&connection).await?;
         Ok(parse_objects(&objects))
     })
 }
@@ -84,6 +73,121 @@ pub fn parse_objects(objects: &ManagedObjects) -> BtSnapshot {
 
     snapshot.devices.sort();
     snapshot
+}
+
+/// Path of the first BlueZ adapter, if one is present.
+pub fn adapter_path(objects: &ManagedObjects) -> Option<OwnedObjectPath> {
+    objects.iter().find_map(|(path, interfaces)| {
+        interfaces
+            .keys()
+            .any(|interface| interface.as_str() == "org.bluez.Adapter1")
+            .then(|| path.clone())
+    })
+}
+
+/// Power the adapter on. This is what `bluetoothctl power on` did, but through
+/// the same connection that reads the state.
+pub fn power_on() -> Result<()> {
+    zbus::block_on(async {
+        let connection = connect().await?;
+        let objects = managed_objects(&connection).await?;
+        let path = adapter_path(&objects).context("no bluetooth adapter found")?;
+
+        connection
+            .call_method(
+                Some("org.bluez"),
+                path.as_str(),
+                Some("org.freedesktop.DBus.Properties"),
+                "Set",
+                &("org.bluez.Adapter1", "Powered", zbus::Variant::from(true)),
+            )
+            .await
+            .context("power on the bluetooth adapter")?;
+
+        Ok(())
+    })
+}
+
+/// Start Bluetooth on demand, power the adapter on, and refresh Waybar.
+pub fn toggle() -> Result<()> {
+    if !service_active() {
+        let status = Command::new("sudo")
+            .args(["-n", "systemctl", "start", SERVICE])
+            .status()
+            .context("spawn sudo systemctl start bluetooth.service")?;
+        if !status.success() {
+            bail!(
+                "could not start {SERVICE}; the passwordless sudoers rule is missing \
+                 (run install.sh without --no-sudo)"
+            );
+        }
+
+        if !wait_until(service_active, 20, Duration::from_millis(100)) {
+            bail!("bluetooth.service did not become active");
+        }
+    }
+
+    power_on()?;
+
+    if !wait_until(
+        || snapshot().map(|snapshot| snapshot.powered).unwrap_or(false),
+        15,
+        Duration::from_millis(200),
+    ) {
+        bail!("bluetooth adapter did not power on");
+    }
+
+    refresh_waybar();
+    launch_blueman();
+    refresh_waybar();
+    Ok(())
+}
+
+async fn connect() -> Result<zbus::Connection> {
+    zbus::connection::Builder::system()
+        .method_timeout(Duration::from_millis(800))
+        .build()
+        .await
+        .context("connect to the system bus")
+}
+
+async fn managed_objects(connection: &zbus::Connection) -> Result<ManagedObjects> {
+    zbus::fdo::ObjectManagerProxy::builder(connection)
+        .destination("org.bluez")
+        .path("/")
+        .build()
+        .await?
+        .get_managed_objects()
+        .await
+        .context("org.bluez GetManagedObjects")
+}
+
+fn wait_until(mut predicate: impl FnMut() -> bool, attempts: usize, delay: Duration) -> bool {
+    for attempt in 0..attempts {
+        if predicate() {
+            return true;
+        }
+        if attempt + 1 < attempts {
+            thread::sleep(delay);
+        }
+    }
+    false
+}
+
+fn refresh_waybar() {
+    let _ = Command::new("pkill").args(["-RTMIN+1", "waybar"]).status();
+}
+
+fn launch_blueman() {
+    let Some(path) = std::env::var_os("PATH") else {
+        return;
+    };
+    let found = std::env::split_paths(&path)
+        .map(|dir| dir.join("blueman-manager"))
+        .find(|candidate| candidate.is_file());
+    if let Some(candidate) = found {
+        let _ = Command::new(candidate).spawn();
+    }
 }
 
 #[cfg(test)]

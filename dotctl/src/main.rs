@@ -1,7 +1,11 @@
 mod bluez;
 mod cli;
 mod cmd;
+mod osd;
+mod power;
+mod reload;
 mod sysfs;
+mod wallpaper;
 mod waybar;
 
 use clap::Parser;
