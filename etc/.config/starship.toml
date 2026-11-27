@@ -3,66 +3,71 @@
 palette = "catppuccin_mocha"
 add_newline = false
 
+# Two-line prompt made of rounded "pills" (Nerd Font powerline caps), so the
+# shell prompt reads like the Waybar capsules:
+#   ╭─    ~/dotfiles    main   ?        󰖟 v3.12
+#   ╰─❯
+# Optional segments (git, languages) are self-contained capsules: a module
+# that does not apply is not rendered at all, leaving no stray glyphs behind.
 format = """
-[╭─ ](bold blue)\
-[ ](bg:blue)\
+[╭─](fg:surface2)\
 $os\
-[ ](bg:surface0)\
 $directory\
-[ ](bg:surface1)\
-$git_branch$git_status\
+$git_branch\
+$git_status\
 $fill\
 $cmd_duration$python$rust$nodejs$golang\
 $line_break\
-$character"""
+[╰─](fg:surface2)$character"""
 
 [os]
 disabled = false
 style = "bg:blue fg:crust bold"
-format = "[ $symbol ]($style)"
+format = "[](fg:blue)[ $symbol ]($style)[](fg:blue bg:surface0)"
 
 [os.symbols]
 Arch = ""
 
 [directory]
 style = "bg:surface0 fg:text"
-format = "[ $path ]($style)"
+format = "[ $path ]($style)[](fg:surface0)"
 truncation_length = 3
 truncate_to_repo = false
+truncation_symbol = "…/"
 
 [git_branch]
-style = "bg:surface1 fg:mauve"
-symbol = " "
-format = "[ $symbol$branch ]($style)"
+style = "bg:surface1 fg:mauve bold"
+symbol = " "
+format = "[](fg:surface1)[ $symbol$branch ]($style)[](fg:surface1) "
 
 [git_status]
-style = "bg:surface1 fg:mauve"
-format = "[$all_status$ahead_behind ]($style)"
+style = "fg:peach bold"
+format = "[$all_status$ahead_behind]($style) "
 
 [cmd_duration]
-style = "fg:yellow"
+style = "bg:surface0 fg:yellow"
 min_time = 2000
-format = "[ 󰔚 $duration ]($style)"
+format = "[](fg:surface0)[ 󰔚 $duration ]($style)[](fg:surface0) "
 
 [python]
-style = "fg:yellow"
-format = "[ $symbol($version) ]($style)"
+style = "bg:surface0 fg:yellow"
+format = "[](fg:surface0)[ $symbol($version) ]($style)[](fg:surface0) "
 
 [rust]
-style = "fg:peach"
-format = "[ $symbol($version) ]($style)"
+style = "bg:surface0 fg:peach"
+format = "[](fg:surface0)[ $symbol($version) ]($style)[](fg:surface0) "
 
 [nodejs]
-style = "fg:green"
-format = "[ $symbol($version) ]($style)"
+style = "bg:surface0 fg:green"
+format = "[](fg:surface0)[ $symbol($version) ]($style)[](fg:surface0) "
 
 [golang]
-style = "fg:sky"
-format = "[ $symbol($version) ]($style)"
+style = "bg:surface0 fg:sky"
+format = "[](fg:surface0)[ $symbol($version) ]($style)[](fg:surface0) "
 
 [character]
-success_symbol = "[╰─❯ ](bold green)"
-error_symbol = "[╰─❯ ](bold red)"
+success_symbol = "[❯](bold green) "
+error_symbol = "[❯](bold red) "
 
 [fill]
 symbol = " "
