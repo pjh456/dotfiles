@@ -10,16 +10,17 @@ configuration {
 }
 
 * {
-  bg:        #1e1e2e;
-  bg-alt:    #181825;
+  bg:        #1e1e2ed9;
+  bg-alt:    #181825e6;
   fg:        #cdd6f4;
   fg-alt:    #bac2de;
   dim:       #585b70;
   blue:      #89b4fa;
+  mauve:     #cba6f7;
   green:     #a6e3a1;
   red:       #f38ba8;
   yellow:    #f9e2af;
-  surface:   #313244;
+  surface:   #313244a6;
   overlay:   #45475a;
 
   /* rofi 内置的 Solarized Light 默认值会穿透到没有显式定义的列表状态，
@@ -52,28 +53,30 @@ configuration {
 window {
   background-color:           var(bg);
   text-color:                 var(fg);
-  border-radius:              12px;
-  border:                     1px;
-  border-color:               var(overlay);
-  width:                      600;
+  border-radius:              16px;
+  border:                     2px;
+  border-color:               #89b4fa44;
+  width:                      640px;
   padding:                    0px;
 }
 
 mainbox {
-  children:           [inputbar, listview];
-  background-color:   var(bg);
-  border-radius:      12px;
-  padding:            0px;
-  spacing:            8px;
+  children:           [inputbar, listview, mode-switcher];
+  background-color:   transparent;
+  border-radius:      16px;
+  padding:            12px;
+  spacing:            10px;
 }
 
 inputbar {
   children:           [prompt, entry, num-filtered-rows, case-indicator];
   background-color:   var(bg-alt);
-  border-radius:      10px;
-  padding:            10px 16px;
-  margin:            10px 10px 0 10px;
-  spacing:           12px;
+  border:             1px;
+  border-color:       #45475a88;
+  border-radius:      12px;
+  padding:            12px 16px;
+  margin:             0px;
+  spacing:            12px;
 }
 
 prompt {
@@ -99,7 +102,7 @@ case-indicator {
 
 listview {
   background-color:   transparent;
-  padding:            0px 10px 10px 10px;
+  padding:            0px;
   spacing:            4px;
   layout:             vertical;
   columns:            2;
@@ -111,7 +114,7 @@ listview {
 element {
   background-color:   transparent;
   text-color:         var(fg);
-  border-radius:      8px;
+  border-radius:      10px;
   padding:            8px 12px;
   spacing:           10px;
 }
@@ -189,15 +192,20 @@ element-text {
 }
 
 button {
-  background-color:   var(surface);
-  text-color:         var(fg);
-  border-radius:      8px;
-  padding:           8px;
+  background-color:   var(bg-alt);
+  text-color:         var(dim);
+  border-radius:      10px;
+  padding:           8px 16px;
 }
 
 button selected {
-  background-color:   var(blue);
-  text-color:         #1e1e2e;
+  background-color:   var(mauve);
+  text-color:         #11111b;
+}
+
+mode-switcher {
+  background-color:   transparent;
+  spacing:            8px;
 }
 
 error-message {
