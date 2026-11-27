@@ -127,16 +127,18 @@ pub fn toggle() -> Result<()> {
         }
     }
 
-    power_on()?;
-
-    if !wait_until(
+    if let Err(err) = power_on() {
+        eprintln!("dotctl: could not power on the bluetooth adapter: {err:#}");
+    } else if !wait_until(
         || snapshot().map(|snapshot| snapshot.powered).unwrap_or(false),
         15,
         Duration::from_millis(200),
     ) {
-        bail!("bluetooth adapter did not power on");
+        eprintln!("dotctl: bluetooth adapter did not report Powered=true");
     }
 
+    // Match the old script: open the manager even when there is no usable
+    // adapter, so the user can see what is wrong (rfkill, no controller, ...).
     refresh_waybar();
     launch_blueman();
     refresh_waybar();
