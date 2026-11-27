@@ -61,13 +61,14 @@ hl.gesture({
 
 hl.config({
 	general = {
-		gaps_in = 8,
-		gaps_out = 14,
+		gaps_in = 6,
+		gaps_out = 12,
 		border_size = 2,
 		layout = "dwindle",
 		col = {
-			active_border = { colors = { "rgba(33ccffee)", "rgba(00ff99ee)" }, angle = 45 },
-			inactive_border = "rgba(595959aa)",
+			-- Catppuccin Mocha: Blue -> Mauve, 45deg
+			active_border = { colors = { "rgba(89b4faee)", "rgba(cba6f7ee)" }, angle = 45 },
+			inactive_border = "rgba(45475aaa)",
 		},
 	},
 })
