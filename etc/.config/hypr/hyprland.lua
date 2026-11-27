@@ -126,6 +126,31 @@ hl.window_rule({
 	opacity = "0.90 0.90",
 })
 
+-- Some portals/XWayland dialogs open with their title bar under the top
+-- bar. Centering every floating window keeps them inside the work area.
+-- Some XWayland dialogs open larger than the work area: a portal file
+-- chooser once asked for 1114px on a 1000px screen, leaving its title bar
+-- above the top edge. Force portal dialogs to a sane, monitor-relative size.
+hl.window_rule({
+	name = "portal-fit",
+	match = {
+		class = "^[Xx]dg-desktop-portal-gtk$",
+	},
+	float = true,
+	size = "monitor_w*0.6 monitor_h*0.8",
+	center = true,
+})
+
+-- QQ runs under XWayland and occasionally floats its login window off-centre.
+hl.window_rule({
+	name = "qq-floating-center",
+	match = {
+		class = "^QQ$",
+		float = true,
+	},
+	center = true,
+})
+
 -- Workspaces 1-5 are persistent, so an empty workspace still exists and can be
 -- clicked in the waybar workspaces module (an absent workspace is a no-op).
 for i = 1, 5 do
