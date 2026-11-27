@@ -72,20 +72,21 @@ window#waybar {
 }
 
 #workspaces {
-  background: rgba(49, 50, 68, 0.4);
+  background: rgba(49, 50, 68, 0.55);
   border-radius: 8px;
-  margin: 4px;
+  margin: 4px 3px;
   padding: 2px;
-  min-width: 120px;
+  min-width: 140px;
 }
 
 #workspaces button {
-  padding: 0 10px;
-  background: transparent;
-  color: #585b70;
-  border-radius: 6px;
+  padding: 0 8px;
+  margin: 0 2px;
+  background: rgba(69, 71, 90, 0.3);
+  color: #6c7086;
+  border-radius: 8px;
   min-width: 20px;
-  transition: all 0.15s ease;
+  transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 #workspaces button:hover {
@@ -93,14 +94,21 @@ window#waybar {
   color: #89b4fa;
 }
 
+#workspaces button.occupied {
+  background: rgba(69, 71, 90, 0.6);
+  color: #cdd6f4;
+}
+
 #workspaces button.active {
-  background: #89b4fa;
-  color: #1e1e2e;
+  background: linear-gradient(135deg, #89b4fa, #cba6f7);
+  color: #11111b;
+  font-weight: bold;
+  padding: 0 18px;
 }
 
 #workspaces button.urgent {
-  background: #f38ba8;
-  color: #1e1e2e;
+  background-color: #f38ba8;
+  color: #11111b;
 }
 
 #clock {
