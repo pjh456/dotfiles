@@ -99,7 +99,7 @@ Debian 稳定版（trixie）的 main 里还没有 hyprland——请用 testing�
 start-hyprland
 ```
 
-首次启动时，`init.sh` 会重启 `hyprland-session.target` 以载入所有服务；之后的启动只会拉起尚未运行的单个服务。
+每次启动都会重启 `hyprland-session.target`，让所有服务重新连上新合成器的 Wayland socket。崩溃重启后服务可能仍是 `active`，但连接早已断开——`fcitx5` 就会这样静默失去输入法，所以只拉起未运行的服务是不够的。若拉起 `init.sh` 的 Hyprland 实例已经消失（快速重启的竞态），脚本会直接退出。
 
 ## 日常使用
 

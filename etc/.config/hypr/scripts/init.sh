@@ -16,16 +16,23 @@ theme_env="GTK_THEME XCURSOR_THEME XCURSOR_SIZE QT_QPA_PLATFORMTHEME QT_QPA_PLAT
 systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE XDG_RUNTIME_DIR $theme_env
 dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE XDG_RUNTIME_DIR DISPLAY $theme_env
 
-if [ ! -f /tmp/hyprland-init-done ]; then
-    touch /tmp/hyprland-init-done
-    systemctl --user stop hyprland-session.target
-    systemctl --user start hyprland-session.target
-else
-    systemctl --user reset-failed
-    for unit in waybar.service swaync.service hyprpaper.service hypridle.service fcitx5-daemon.service hyprpolkitagent.service; do
-        systemctl --user is-active --quiet "$unit" 2>/dev/null || systemctl --user start "$unit" 2>/dev/null
-    done
+# Only touch the session if the compositor that spawned us is still there. On a
+# fast crash/restart this script can be left orphaned: Hyprland is already gone,
+# and any service started now would connect to a Wayland socket that no longer
+# exists (fcitx5 then stays "active" with no input-method connection, so
+# Ctrl+Space silently stops working in every Wayland app).
+sig="${HYPRLAND_INSTANCE_SIGNATURE:-}"
+rt="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+if [ -n "$sig" ] && [ ! -S "$rt/hypr/$sig/.socket.sock" ]; then
+    exit 0
 fi
+
+# Always rebind the services to this instance. After a compositor restart the
+# old waybar/fcitx5 may still be "active" from is-active's point of view even
+# though their connection is dead, so starting only the inactive ones is not
+# enough. Restarting the target propagates through PartOf=.
+systemctl --user reset-failed
+systemctl --user restart hyprland-session.target
 
 # 已经跑着的 portal 进程要重启才会拿到上面的主题环境。
 systemctl --user restart xdg-desktop-portal-gtk.service 2>/dev/null

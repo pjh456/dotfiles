@@ -104,7 +104,7 @@ Then start Hyprland:
 start-hyprland
 ```
 
-On first start, `init.sh` will stop and restart `hyprland-session.target` to pick up all services. On subsequent starts it only starts individual services that aren't running.
+Every start restarts `hyprland-session.target`, so the daemons re-attach to the new compositor's Wayland socket. After a crash-and-restart a service can still look `active` while its connection is already dead — `fcitx5` in particular then loses the input method silently, so starting only the inactive units is not enough. `init.sh` also exits early when the Hyprland instance that launched it is already gone (a fast restart can leave it orphaned).
 
 ## Day-to-day
 
