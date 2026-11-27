@@ -302,22 +302,49 @@ if [ "$with_systemd" -eq 1 ] && command -v systemctl >/dev/null 2>&1; then
 fi
 
 # --- 3. on-demand bluetooth sudoers rule ------------------------------------
+# /etc/sudoers.d is root-only, so an unprivileged [ -e ] never sees the rule
+# and the old check re-installed it (asking for a password) on every run.
+# Ask sudo with -n instead: it answers only while credentials are cached.
+# Without cached credentials, trust the marker dropped after a successful
+# install, so a plain re-run stays password-free.
 if [ "$with_sudo" -eq 1 ]; then
   rule="/etc/sudoers.d/bluetooth-ondemand"
-  if [ -e "$rule" ]; then
-    echo "sudoers rule present: $rule"
-  elif command -v sudo >/dev/null 2>&1; then
-    line="$USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl start bluetooth.service, /usr/bin/systemctl stop bluetooth.service"
-    if echo "$line" | sudo tee "$rule" >/dev/null; then
-      sudo chmod 440 "$rule"
-      sudo visudo -c -f "$rule" >/dev/null
-      echo "installed sudoers rule: $rule"
+  marker="$HOME/.dotfiles-sudoers-bluetooth"
+  rule_state=unknown
+  if sudo -n true 2>/dev/null; then
+    if sudo -n test -e "$rule"; then
+      rule_state=present
     else
-      echo "warning: could not install sudoers rule (sudo failed?)"
+      rule_state=missing
     fi
-  else
-    echo "note: sudo not available, skipped sudoers rule"
+  elif [ -e "$marker" ]; then
+    rule_state=assumed
   fi
+
+  case "$rule_state" in
+    present)
+      printf 'verified %s\n' "$(date -Is)" >"$marker"
+      echo "sudoers rule present: $rule"
+      ;;
+    assumed)
+      echo "sudoers rule assumed present: $rule (run 'sudo -v' first to verify)"
+      ;;
+    *)
+      if command -v sudo >/dev/null 2>&1; then
+        line="$USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl start bluetooth.service, /usr/bin/systemctl stop bluetooth.service"
+        if echo "$line" | sudo tee "$rule" >/dev/null; then
+          sudo chmod 440 "$rule"
+          sudo visudo -c -f "$rule" >/dev/null
+          printf 'installed %s\n' "$(date -Is)" >"$marker"
+          echo "installed sudoers rule: $rule"
+        else
+          echo "warning: could not install sudoers rule (sudo failed?)" >&2
+        fi
+      else
+        echo "note: sudo not available, skipped sudoers rule"
+      fi
+      ;;
+  esac
 fi
 
 # --- 4. keep acpid off the media keys ---------------------------------------

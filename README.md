@@ -46,7 +46,8 @@ By default `install.sh`:
 - backs up any existing dotfiles to `~/.dotfiles-backup-<timestamp>/`, then
   copies everything from `etc/` into `$HOME` as regular files;
 - enables the session services whose binaries are installed (`systemctl --user`);
-- writes the NOPASSWD sudoers rule for on-demand bluetooth;
+- writes the NOPASSWD sudoers rule for on-demand bluetooth (and remembers it,
+  so re-runs don't ask for a password);
 - comments out the volume/brightness commands in `/etc/acpi/handler.sh` (only
   if `acpid` is installed), so acpid and Hyprland's media-key binds don't run
   the same key twice.

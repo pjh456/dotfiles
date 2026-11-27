@@ -44,7 +44,7 @@ git clone https://github.com/pjh456/dotfiles ~/dotfiles
 - 把已存在的 dotfiles 备份到 `~/.dotfiles-backup-<时间戳>/`，然后以
   普通文件拷贝的方式把 `etc/` 里的全部内容放进 `$HOME`；
 - 启用主程序已安装的会话服务（`systemctl --user`）；
-- 写入按需蓝牙的 NOPASSWD sudoers 规则；
+- 写入按需蓝牙的 NOPASSWD sudoers 规则，并记住已写入，重跑时不再要求输入密码；
 - 注释掉 `/etc/acpi/handler.sh` 里的音量/亮度命令（仅当装了 `acpid`），
   避免 acpid 和 Hyprland 的多媒体键绑定对同一次按键各执行一遍。
 
