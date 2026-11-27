@@ -1,6 +1,13 @@
 #!/bin/dash
-pkill waybar
-while pgrep -x waybar > /dev/null 2>&1; do
+# Restart waybar with fresh state. A SIGUSR2 "soft reload" leaves stale GTK
+# widgets behind in waybar 0.16 (duplicate-label warnings, doubled module
+# text), so a real restart is the reliable way to pick up config changes.
+if systemctl --user is-active --quiet waybar.service; then
+    exec systemctl --user restart waybar.service
+fi
+
+pkill -x waybar
+while pgrep -x waybar >/dev/null 2>&1; do
     sleep 0.1
 done
-waybar &
+exec waybar

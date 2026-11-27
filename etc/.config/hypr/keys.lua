@@ -21,7 +21,7 @@ hl.bind(mainMod .. " + T", hl.dsp.window.float())
 hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("swaync-client -t -sw"))
 
 hl.bind(mainMod .. " + F5", function()
-	hl.exec_cmd("hyprctl reload && pkill -SIGUSR2 waybar")
+	hl.exec_cmd("hyprctl reload && ~/.local/bin/waybar-reload")
 	notify.ok("Config", "Reloaded")
 end)
 

@@ -121,7 +121,7 @@ enabling, the sudoers rule.
 | `Super + V`           | Clipboard history (cliphist + rofi)              |
 | `Super + T`           | Toggle floating                                  |
 | `Super + N`           | Toggle notification center (swaync)              |
-| `Super + F5`          | Reload Hyprland + Waybar                         |
+| `Super + F5`          | Reload Hyprland + restart Waybar                 |
 | `Ctrl + Alt + A`      | Screenshot region (grim + slurp)                 |
 | `Super + F`           | Fullscreen                                       |
 | Waybar Bluetooth icon | Click: start `bluetooth.service` + power on adapter, then open `blueman-manager` (no-op if already on) |
@@ -144,7 +144,7 @@ configs invoke.
 | `clipmenu` | Scripted clipboard history: the `Super + V` pipeline, plus a "copied" notification and `--paste-once` |
 | `rofi-toggle <args>` | Toggle any rofi menu (`rofi-toggle -show drun`): opens it, or closes it when already open |
 | `power-mode [status\|next]` | Power profile from the CLI (`power-mode next`); the bar uses waybar's built-in `power-profiles-daemon` module |
-| `waybar-reload` | Fully kill and restart waybar after editing its config (the `Super + F5` binding only soft-reloads via `SIGUSR2`) |
+| `waybar-reload` | Restart waybar after editing its config (`systemctl --user restart waybar.service` when it runs under systemd); `Super + F5` calls it together with a Hyprland reload |
 | `mpv-profile-switch` | Force-sync the mpv profile to the current TLP profile now — links `mpv.conf.{PRF,BAL,SAV}` → `mpv.conf`. Normally done automatically by `mpv-profile-watch` |
 | `power-profile-daemon` | Run in a terminal: watches AC plug events (inotify) and switches `performance` / `power-saver` on the D-Bus power-profiles interface |
 | `on-battery` | Exits 0 only while on battery — for one-liners: `on-battery && mpv-profile-switch` |

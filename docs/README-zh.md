@@ -117,7 +117,7 @@ start-hyprland
 | `Super + V`           | 剪贴板历史（cliphist + rofi）                  |
 | `Super + T`           | 切换浮动                                       |
 | `Super + N`           | 切换通知中心（swaync）                         |
-| `Super + F5`          | 重载 Hyprland + Waybar                         |
+| `Super + F5`          | 重载 Hyprland + 重启 Waybar                    |
 | `Ctrl + Alt + A`      | 区域截图（grim + slurp）                       |
 | `Super + F`           | 全屏                                           |
 | Waybar 蓝牙图标        | 点击：启动 `bluetooth.service` + 打开适配器，然后打开 `blueman-manager`（已开则无动作） |
@@ -139,7 +139,7 @@ start-hyprland
 | `clipmenu` | 脚本化剪贴板历史：`Super + V` 那条流水线的脚本版，外加"已复制"通知和 `--paste-once` |
 | `rofi-toggle <参数>` | 切换任意 rofi 菜单（`rofi-toggle -show drun`）：没开就开，已开就关 |
 | `power-mode [status\|next]` | 命令行切换电源 profile（`power-mode next`）；状态栏改用 waybar 自带的 `power-profiles-daemon` 模块 |
-| `waybar-reload` | 改完 waybar 配置后完整杀进程重启（`Super + F5` 只是 `SIGUSR2` 软重载） |
+| `waybar-reload` | 改完 waybar 配置后重启它（由 systemd 托管时走 `systemctl --user restart waybar.service`）；`Super + F5` 会连同 Hyprland 一起重载 |
 | `mpv-profile-switch` | 立即把 mpv profile 同步到当前 TLP profile——把 `mpv.conf.{PRF,BAL,SAV}` 链接成 `mpv.conf`。平时由 `mpv-profile-watch` 自动做 |
 | `power-profile-daemon` | 在终端里长跑：inotify 监听插拔电源事件，经 D-Bus power-profiles 接口切换 `performance` / `power-saver` |
 | `on-battery` | 仅在电池供电时返回 0，用于一行命令：`on-battery && mpv-profile-switch` |
