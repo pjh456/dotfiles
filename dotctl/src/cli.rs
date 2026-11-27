@@ -28,4 +28,6 @@ pub enum Command {
 pub enum StatusKind {
     /// CPU package temperature
     Temp,
+    /// On-demand Bluetooth state
+    Bt,
 }

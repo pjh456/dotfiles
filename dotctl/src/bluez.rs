@@ -1,0 +1,176 @@
+use std::process::Command;
+use std::time::Duration;
+
+use anyhow::{Context, Result};
+use zbus::fdo::ManagedObjects;
+
+const SERVICE: &str = "bluetooth.service";
+
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct BtSnapshot {
+    pub powered: bool,
+    pub devices: Vec<String>,
+}
+
+/// Query BlueZ in one `GetManagedObjects` call.
+pub fn snapshot() -> Result<BtSnapshot> {
+    zbus::block_on(async {
+        let connection = zbus::connection::Builder::system()
+            .method_timeout(Duration::from_millis(800))
+            .build()
+            .await
+            .context("connect to the system bus")?;
+
+        let objects = zbus::fdo::ObjectManagerProxy::builder(&connection)
+            .destination("org.bluez")
+            .path("/")
+            .build()
+            .await?
+            .get_managed_objects()
+            .await
+            .context("org.bluez GetManagedObjects")?;
+
+        Ok(parse_objects(&objects))
+    })
+}
+
+/// The old script deliberately avoided D-Bus activation when the service was
+/// stopped: keep that behaviour so a Waybar poll never starts Bluetooth.
+pub fn service_active() -> bool {
+    Command::new("systemctl")
+        .args(["is-active", "--quiet", SERVICE])
+        .status()
+        .map(|status| status.success())
+        .unwrap_or(false)
+}
+
+pub fn parse_objects(objects: &ManagedObjects) -> BtSnapshot {
+    let mut snapshot = BtSnapshot::default();
+
+    for interfaces in objects.values() {
+        for (interface, properties) in interfaces {
+            match interface.as_str() {
+                "org.bluez.Adapter1" => {
+                    if let Some(value) = properties.get("Powered") {
+                        snapshot.powered = value.downcast_ref::<&bool>().copied().unwrap_or(false);
+                    }
+                }
+                "org.bluez.Device1" => {
+                    let connected = properties
+                        .get("Connected")
+                        .and_then(|value| value.downcast_ref::<&bool>().ok())
+                        .copied()
+                        .unwrap_or(false);
+                    if !connected {
+                        continue;
+                    }
+                    let alias = properties
+                        .get("Alias")
+                        .and_then(|value| value.downcast_ref::<&str>().ok())
+                        .map(str::to_owned)
+                        .or_else(|| {
+                            properties
+                                .get("Address")
+                                .and_then(|value| value.downcast_ref::<&str>().ok())
+                                .map(str::to_owned)
+                        })
+                        .unwrap_or_else(|| "device".to_owned());
+                    snapshot.devices.push(alias);
+                }
+                _ => {}
+            }
+        }
+    }
+
+    snapshot.devices.sort();
+    snapshot
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashMap;
+    use zbus::names::OwnedInterfaceName;
+    use zbus::{OwnedObjectPath, OwnedVariant, Str};
+
+    fn interface(name: &str) -> OwnedInterfaceName {
+        name.try_into().unwrap()
+    }
+
+    fn path(name: &str) -> OwnedObjectPath {
+        name.try_into().unwrap()
+    }
+
+    fn props(entries: &[(&str, OwnedVariant)]) -> HashMap<String, OwnedVariant> {
+        entries
+            .iter()
+            .map(|(key, value)| ((*key).to_owned(), value.clone()))
+            .collect()
+    }
+
+    #[test]
+    fn powered_adapter_without_devices() {
+        let mut objects = HashMap::new();
+        objects.insert(
+            path("/org/bluez/hci0"),
+            HashMap::from([(
+                interface("org.bluez.Adapter1"),
+                props(&[("Powered", OwnedVariant::from(true))]),
+            )]),
+        );
+
+        assert_eq!(
+            parse_objects(&objects),
+            BtSnapshot {
+                powered: true,
+                devices: vec![]
+            }
+        );
+    }
+
+    #[test]
+    fn connected_devices_use_alias_and_are_sorted() {
+        let mut objects = HashMap::new();
+        objects.insert(
+            path("/org/bluez/hci0"),
+            HashMap::from([(
+                interface("org.bluez.Adapter1"),
+                props(&[("Powered", OwnedVariant::from(true))]),
+            )]),
+        );
+        for (index, alias) in ["Keyboard", "Headset"].iter().enumerate() {
+            objects.insert(
+                path(&format!("/org/bluez/hci0/dev_{index}")),
+                HashMap::from([(
+                    interface("org.bluez.Device1"),
+                    props(&[
+                        ("Connected", OwnedVariant::from(true)),
+                        ("Alias", OwnedVariant::from(Str::from(*alias))),
+                    ]),
+                )]),
+            );
+        }
+
+        assert_eq!(
+            parse_objects(&objects),
+            BtSnapshot {
+                powered: true,
+                devices: vec!["Headset".to_owned(), "Keyboard".to_owned()]
+            }
+        );
+    }
+
+    #[test]
+    fn disconnected_devices_are_ignored() {
+        let mut objects = HashMap::new();
+        objects.insert(
+            path("/org/bluez/hci0/dev_1"),
+            HashMap::from([(
+                interface("org.bluez.Device1"),
+                props(&[("Connected", OwnedVariant::from(false))]),
+            )]),
+        );
+
+        assert_eq!(parse_objects(&objects), BtSnapshot::default());
+    }
+}

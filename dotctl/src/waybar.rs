@@ -19,6 +19,11 @@ impl WaybarOutput {
         }
     }
 
+    pub fn with_tooltip(mut self, tooltip: impl Into<String>) -> Self {
+        self.tooltip = Some(tooltip.into());
+        self
+    }
+
     pub fn print(&self) {
         // Waybar parses this line. Serialising a struct of owned strings cannot fail.
         println!(

@@ -1,5 +1,6 @@
 use anyhow::Result;
 
+use crate::bluez;
 use crate::cli::StatusKind;
 use crate::sysfs;
 use crate::waybar::WaybarOutput;
@@ -7,8 +8,39 @@ use crate::waybar::WaybarOutput;
 pub fn run(kind: StatusKind) -> Result<()> {
     match kind {
         StatusKind::Temp => temp().print(),
+        StatusKind::Bt => bt().print(),
     }
     Ok(())
+}
+
+const BT_ICON: &str = "\u{f294}";
+
+/// Bluetooth status, matching the old `bt-toggle status` JSON contract.
+pub fn bt() -> WaybarOutput {
+    let off = || WaybarOutput::new(format!("{BT_ICON} off"), "off").with_tooltip("Bluetooth off");
+
+    if !bluez::service_active() {
+        return off();
+    }
+
+    let snapshot = match bluez::snapshot() {
+        Ok(snapshot) => snapshot,
+        Err(err) => {
+            eprintln!("dotctl: bluetooth status: {err:#}");
+            return off();
+        }
+    };
+
+    if !snapshot.powered {
+        return off();
+    }
+
+    match snapshot.devices.first() {
+        Some(alias) => {
+            WaybarOutput::new(format!("{BT_ICON} {alias}"), "connected").with_tooltip(alias)
+        }
+        None => WaybarOutput::new(format!("{BT_ICON} on"), "on").with_tooltip("Bluetooth on"),
+    }
 }
 
 /// CPU temperature, matching the old `temperature` script's JSON contract.

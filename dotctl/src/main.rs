@@ -1,3 +1,4 @@
+mod bluez;
 mod cli;
 mod cmd;
 mod sysfs;
