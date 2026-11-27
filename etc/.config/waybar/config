@@ -45,10 +45,10 @@
     "name": "bottom-bar",
     "layer": "top",
     "position": "bottom",
-    "height": 30,
+    "height": 32,
     "modules-left": ["custom/launcher", "hyprland/workspaces"],
     "modules-center": ["cpu", "memory", "disk", "custom/temperature"],
-    "modules-right": ["network", "custom/bt-toggle", "custom/power-mode", "battery", "tray"],
+    "modules-right": ["network", "custom/bt-toggle", "power-profiles-daemon", "battery", "tray"],
 
     "hyprland/workspaces": {
       "all-outputs": true,
@@ -76,13 +76,6 @@
       "signal": 1,
       "return-type": "json",
       "on-click": "$HOME/.local/bin/bt-toggle toggle"
-    },
-    "custom/power-mode": {
-      "exec": "$HOME/.local/bin/power-mode status",
-      "interval": 30,
-      "signal": 1,
-      "return-type": "json",
-      "on-click": "$HOME/.local/bin/power-mode next"
     },
     "cpu": {
       "format": " {usage}%",

@@ -60,7 +60,8 @@ git clone https://github.com/pjh456/dotfiles ~/dotfiles
 Debian 稳定版（trixie）的 main 里还没有 hyprland——请用 testing，或 stable
 加上 trixie-backports。两个细节：
 
-- `tlp` 与 `power-profiles-daemon` 冲突。`power-mode` waybar 模块需要
+- `tlp` 与 `power-profiles-daemon` 冲突。waybar 的
+  `power-profiles-daemon` 模块（以及 `power-mode` 脚本）需要
   `net.hadess.PowerProfiles` D-Bus 接口，tlp 1.10 已内置该功能——在
   `/etc/tlp.conf` 里设置 `TLP_PD_ENABLE=1` 启用。
 - Arch 的 `fcitx5-gtk` 在 Debian 上叫 `fcitx5-frontend-gtk3` /
@@ -137,6 +138,7 @@ start-hyprland
 | `powermenu` | Rofi 电源菜单——`Super + L` 也是调它，再按一次关闭 |
 | `clipmenu` | 脚本化剪贴板历史：`Super + V` 那条流水线的脚本版，外加"已复制"通知和 `--paste-once` |
 | `rofi-toggle <参数>` | 切换任意 rofi 菜单（`rofi-toggle -show drun`）：没开就开，已开就关 |
+| `power-mode [status\|next]` | 命令行切换电源 profile（`power-mode next`）；状态栏改用 waybar 自带的 `power-profiles-daemon` 模块 |
 | `waybar-reload` | 改完 waybar 配置后完整杀进程重启（`Super + F5` 只是 `SIGUSR2` 软重载） |
 | `mpv-profile-switch` | 立即把 mpv profile 同步到当前 TLP profile——把 `mpv.conf.{PRF,BAL,SAV}` 链接成 `mpv.conf`。平时由 `mpv-profile-watch` 自动做 |
 | `power-profile-daemon` | 在终端里长跑：inotify 监听插拔电源事件，经 D-Bus power-profiles 接口切换 `performance` / `power-saver` |
@@ -147,7 +149,6 @@ start-hyprland
 | 脚本 | 调用方 |
 |---|---|
 | `bt-toggle [status\|toggle]` | waybar 蓝牙模块（5 秒轮询 + 点击） |
-| `power-mode [status\|next]` | waybar 电源 profile 模块 |
 | `temperature` | waybar 温度模块 |
 | `weather` | waybar 天气模块（30 分钟轮询） |
 | `mpv-profile-watch` | user service；TLP profile 变化时重跑 `mpv-profile-switch`（10 秒轮询） |

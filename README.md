@@ -62,10 +62,10 @@ via `apt` and prints the packages that need a manual build. Debian stable
 (trixie) predates hyprland in main — use testing, or stable with
 trixie-backports. Two specifics:
 
-- `tlp` conflicts with `power-profiles-daemon`. The `power-mode` waybar
-  module needs the `net.hadess.PowerProfiles` D-Bus interface, which tlp
-  1.10 provides built-in — enable it with `TLP_PD_ENABLE=1` in
-  `/etc/tlp.conf`.
+- `tlp` conflicts with `power-profiles-daemon`. The waybar
+  `power-profiles-daemon` module (and the `power-mode` script) need the
+  `net.hadess.PowerProfiles` D-Bus interface, which tlp 1.10 provides
+  built-in — enable it with `TLP_PD_ENABLE=1` in `/etc/tlp.conf`.
 - Arch's `fcitx5-gtk` is `fcitx5-frontend-gtk3` / `fcitx5-frontend-gtk4`
   on Debian.
 
@@ -143,6 +143,7 @@ configs invoke.
 | `powermenu` | Rofi power menu — also the `Super + L` binding; a second press closes it |
 | `clipmenu` | Scripted clipboard history: the `Super + V` pipeline, plus a "copied" notification and `--paste-once` |
 | `rofi-toggle <args>` | Toggle any rofi menu (`rofi-toggle -show drun`): opens it, or closes it when already open |
+| `power-mode [status\|next]` | Power profile from the CLI (`power-mode next`); the bar uses waybar's built-in `power-profiles-daemon` module |
 | `waybar-reload` | Fully kill and restart waybar after editing its config (the `Super + F5` binding only soft-reloads via `SIGUSR2`) |
 | `mpv-profile-switch` | Force-sync the mpv profile to the current TLP profile now — links `mpv.conf.{PRF,BAL,SAV}` → `mpv.conf`. Normally done automatically by `mpv-profile-watch` |
 | `power-profile-daemon` | Run in a terminal: watches AC plug events (inotify) and switches `performance` / `power-saver` on the D-Bus power-profiles interface |
@@ -153,7 +154,6 @@ configs invoke.
 | Script | Invoked by |
 |---|---|
 | `bt-toggle [status\|toggle]` | waybar bluetooth module (5s poll + click) |
-| `power-mode [status\|next]` | waybar power-profile module |
 | `temperature` | waybar temperature module |
 | `weather` | waybar weather module (30 min poll) |
 | `mpv-profile-watch` | user service; re-runs `mpv-profile-switch` when the TLP profile changes (10s poll) |
