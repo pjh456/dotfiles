@@ -89,11 +89,19 @@ manifest_file="$HOME/.dotfiles-deployed"
 
 if [ "$with_restore" -eq 1 ]; then
   if [ -z "$restore_dir" ]; then
-    restore_dir=$(ls -1d "$HOME"/.dotfiles-backup-* 2>/dev/null | sort | tail -1)
+    restore_dir=$(ls -1d "$HOME"/.dotfiles-backup-* 2>/dev/null | sort | tail -1 || true)
   fi
-  [ -n "$restore_dir" ] && [ -d "$restore_dir" ] || {
-    echo "error: backup dir not found: ${restore_dir:-<none>}" >&2; exit 1;
-  }
+  clean_restore=0
+  if [ -z "$restore_dir" ] || [ ! -d "$restore_dir" ]; then
+    if [ -f "$manifest_file" ]; then
+      echo "no backup dir (clean install); removing deployed files only"
+      restore_dir="/nonexistent"
+      clean_restore=1
+    else
+      echo "error: backup dir not found: ${restore_dir:-<none>}" >&2
+      exit 1
+    fi
+  fi
 
   restore_one() {
     local src="$1" target
@@ -129,7 +137,11 @@ if [ "$with_restore" -eq 1 ]; then
   fi
 
   rm -f "$manifest_file"
-  echo "restored $RESTORED file(s) from $restore_dir (deployed files removed)"
+  if [ "$clean_restore" -eq 1 ]; then
+    echo "removed deployed files (there was no backup to restore)"
+  else
+    echo "restored $RESTORED file(s) from $restore_dir (deployed files removed)"
+  fi
   echo "note: systemd enabling, the sudoers rule and the acpid media-key patch are not rolled back"
   exit 0
 fi
