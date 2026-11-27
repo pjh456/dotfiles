@@ -1,0 +1,50 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+
+  "logo": {
+    "type": "small",
+    "source": "arch",
+    "padding": { "top": 1, "right": 2 }
+  },
+
+  "display": {
+    "separator": "  ",
+    "key": { "width": 11 },
+    "color": {
+      "keys": "#89b4fa",
+      "title": "#cba6f7",
+      "separator": "#45475a",
+      "output": "#cdd6f4"
+    }
+  },
+
+  "modules": [
+    { "type": "title", "key": " ", "format": "{user-name}@{host-name}" },
+
+    { "type": "custom", "key": " ", "format": "󰍹 Hardware", "outputColor": "#89b4fa" },
+    { "type": "host", "key": "Host", "keyColor": "#89b4fa" },
+    { "type": "display", "key": "Display", "keyColor": "#89b4fa", "format": "{width}x{height} @ {refresh-rate}Hz ({inch} in)" },
+    { "type": "cpu", "key": "CPU", "keyColor": "#89b4fa", "format": "{name} ({cores-physical}C/{cores-logical}T)" },
+    { "type": "gpu", "key": "GPU", "keyColor": "#89b4fa" },
+    { "type": "memory", "key": "Memory", "keyColor": "#89b4fa", "format": "{used} / {total} ({percentage})" },
+    { "type": "disk", "key": "Disk", "keyColor": "#89b4fa", "folders": ["/"], "format": "{size-used} / {size-total} ({size-percentage}) - {filesystem}" },
+    { "type": "battery", "key": "Battery", "keyColor": "#89b4fa", "format": "{capacity} ({status})" },
+
+    { "type": "custom", "key": " ", "format": "󰖟 Software", "outputColor": "#cba6f7" },
+    { "type": "os", "key": "OS", "keyColor": "#cba6f7" },
+    { "type": "kernel", "key": "Kernel", "keyColor": "#cba6f7" },
+    { "type": "wm", "key": "WM", "keyColor": "#cba6f7" },
+    { "type": "shell", "key": "Shell", "keyColor": "#cba6f7" },
+    { "type": "terminal", "key": "Terminal", "keyColor": "#cba6f7" },
+    { "type": "packages", "key": "Packages", "keyColor": "#cba6f7" },
+    { "type": "uptime", "key": "Uptime", "keyColor": "#cba6f7" },
+
+    { "type": "custom", "key": " ", "format": "󰉦 Theme", "outputColor": "#a6e3a1" },
+    { "type": "theme", "key": "Theme", "keyColor": "#a6e3a1" },
+    { "type": "icons", "key": "Icons", "keyColor": "#a6e3a1" },
+    { "type": "font", "key": "Font", "keyColor": "#a6e3a1" },
+    { "type": "cursor", "key": "Cursor", "keyColor": "#a6e3a1" },
+
+    { "type": "colors", "key": " ", "symbol": "circle", "paddingLeft": 2 }
+  ]
+}
