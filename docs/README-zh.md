@@ -150,7 +150,8 @@ start-hyprland
 |---|---|
 | `bt-toggle [status\|toggle]` | waybar 蓝牙模块（5 秒轮询 + 点击） |
 | `temperature` | waybar 温度模块 |
-| `weather` | waybar 天气模块（30 分钟轮询） |
+| `weather` | waybar 天气模块（30 分钟轮询）；同时把 7 天预报写进缓存 |
+| `weather-forecast` | 点击 waybar 天气图标时用 rofi 展示缓存里的 7 天预报 |
 | `mpv-profile-watch` | user service；TLP profile 变化时重跑 `mpv-profile-switch`（10 秒轮询） |
 
 ## 文件结构

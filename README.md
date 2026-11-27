@@ -155,7 +155,8 @@ configs invoke.
 |---|---|
 | `bt-toggle [status\|toggle]` | waybar bluetooth module (5s poll + click) |
 | `temperature` | waybar temperature module |
-| `weather` | waybar weather module (30 min poll) |
+| `weather` | waybar weather module (30 min poll); also caches the 7-day forecast |
+| `weather-forecast` | click on the waybar weather module; renders the cached forecast with rofi |
 | `mpv-profile-watch` | user service; re-runs `mpv-profile-switch` when the TLP profile changes (10s poll) |
 
 ## File Structure
@@ -183,7 +184,7 @@ configs invoke.
 │   │   ├── foot/               # Terminal config
 │   │   └── systemd/user/       # Session services (*.wants/ not tracked)
 │   └── .local/bin/            # powermenu, bt-toggle, power-mode, temperature,
-│                             # weather, clipmenu, setwp, waybar-reload,
+│                             # weather, weather-forecast, clipmenu, setwp, waybar-reload,
 │                             # mpv-profile-{watch,switch}, on-battery, ...
 └── .github/workflows/ci.yml   # shellcheck, JSON check, package resolution, dry-run
 ```

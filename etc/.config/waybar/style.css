@@ -78,6 +78,52 @@ window#waybar {
   padding: 0 10px;
 }
 
+#custom-weather.wmo0 {
+  color: #f9e2af;
+}
+
+#custom-weather.wmo1,
+#custom-weather.wmo2 {
+  color: #cba6f7;
+}
+
+#custom-weather.wmo3,
+#custom-weather.wmo45,
+#custom-weather.wmo48 {
+  color: #a6adc8;
+}
+
+#custom-weather.wmo51,
+#custom-weather.wmo53,
+#custom-weather.wmo55,
+#custom-weather.wmo56,
+#custom-weather.wmo57,
+#custom-weather.wmo61,
+#custom-weather.wmo63,
+#custom-weather.wmo65,
+#custom-weather.wmo66,
+#custom-weather.wmo67,
+#custom-weather.wmo80,
+#custom-weather.wmo81,
+#custom-weather.wmo82 {
+  color: #89b4fa;
+}
+
+#custom-weather.wmo71,
+#custom-weather.wmo73,
+#custom-weather.wmo75,
+#custom-weather.wmo77,
+#custom-weather.wmo85,
+#custom-weather.wmo86 {
+  color: #89dceb;
+}
+
+#custom-weather.wmo95,
+#custom-weather.wmo96,
+#custom-weather.wmo99 {
+  color: #f38ba8;
+}
+
 #custom-uptime {
   color: #6c7086;
   padding: 0 10px;
