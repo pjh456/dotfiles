@@ -71,7 +71,7 @@ jobs:
           out=$(./install.sh --packages --no-systemd --no-sudo)
           echo "$out"
           # manual-build list must be surfaced
-          echo "$out" | grep -q 'no Debian packages for: hypridle hyprlock hyprpaper hyprswitch swaync fonts-jetbrains-mono-nerd'
+          echo "$out" | grep -q 'no Debian packages for: hypridle hyprlock hyprpaper hyprswitch swaync fonts-jetbrains-mono-nerd rofi-emoji'
           for p in $(grep -vE '^[[:space:]]*(#|$)' packages/debian.txt); do
             dpkg -s "$p" > /dev/null
           done

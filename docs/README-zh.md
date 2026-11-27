@@ -92,6 +92,7 @@ Debian 稳定版（trixie）的 main 里还没有 hyprland——请用 testing�
 | hyprswitch                  | https://github.com/hyprwm/hyprswitch                          |
 | swaync                      | https://github.com/elkowar/swaync                             |
 | fonts-jetbrains-mono-nerd   | https://github.com/nerd-fonts/nerd-fonts（安装脚本）          |
+| rofi-emoji                  | https://github.com/Mange/rofi-emoji                          |
 
 然后启动 Hyprland：
 

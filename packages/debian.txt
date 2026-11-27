@@ -8,7 +8,6 @@ hyprland
 waybar
 foot
 rofi
-rofi-emoji
 fcitx5
 fcitx5-chinese-addons
 fcitx5-frontend-gtk3

@@ -97,6 +97,7 @@ No Debian package exists for these; build from source:
 | hyprswitch                      | https://github.com/hyprwm/hyprswitch                          |
 | swaync                          | https://github.com/elkowar/swaync                             |
 | fonts-jetbrains-mono-nerd       | https://github.com/nerd-fonts/nerd-fonts (install script)     |
+| rofi-emoji                      | https://github.com/Mange/rofi-emoji                           |
 
 Then start Hyprland:
 

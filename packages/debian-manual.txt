@@ -5,3 +5,4 @@ hyprpaper
 hyprswitch
 swaync
 fonts-jetbrains-mono-nerd
+rofi-emoji
