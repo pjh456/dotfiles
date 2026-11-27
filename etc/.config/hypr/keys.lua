@@ -27,6 +27,13 @@ end)
 
 hl.bind("CTRL + ALT + A", hl.dsp.exec_cmd("grim -g \"$(slurp)\" - | tee >(wl-copy --type image/png) | cliphist store"))
 
+-- Media keys drive the same OSD the waybar widgets use.
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("~/.local/bin/osd-ctl volume up"), { repeating = true })
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("~/.local/bin/osd-ctl volume down"), { repeating = true })
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd("~/.local/bin/osd-ctl volume mute"))
+hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("~/.local/bin/osd-ctl brightness up"), { repeating = true })
+hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("~/.local/bin/osd-ctl brightness down"), { repeating = true })
+
 hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen())
 
 local dirs = { "left", "right", "up", "down" }
