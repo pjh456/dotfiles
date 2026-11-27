@@ -187,6 +187,15 @@ for _, rule in ipairs({
 	})
 end
 
+-- Rofi is a keyboard-driven picker: while its layersOut fade runs (~300ms),
+-- the window still owns focus, so the emoji/launcher target only appears
+-- once the fade is over. Snap instead of fading.
+hl.layer_rule({
+	name = "snap-rofi",
+	match = { namespace = "^rofi$" },
+	no_anim = true,
+})
+
 require("keys")
 
 -- Autostart
