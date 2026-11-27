@@ -178,6 +178,7 @@ configs invoke.
 │   ├── .gitconfig
 │   ├── .config/
 │   │   ├── chrome-flags.conf  # Chromium/Electron: wayland native + Intel VA-API
+│   │   ├── qq-flags.conf      # QQ: native Wayland (avoids XWayland dialog sizing)
 │   │   ├── starship.toml      # Catppuccin two-line prompt
 │   │   ├── fastfetch/         # Grouped system info card
 │   │   ├── btop/              # Catppuccin theme, transparent background

@@ -173,6 +173,7 @@ start-hyprland
 │   ├── .gitconfig
 │   ├── .config/
 │   │   ├── chrome-flags.conf  # Chromium/Electron：Wayland 原生 + Intel VA-API
+│   │   ├── qq-flags.conf      # QQ：原生 Wayland，避开 XWayland 弹窗尺寸问题
 │   │   ├── starship.toml      # Catppuccin 双行提示符
 │   │   ├── fastfetch/         # 分组系统信息卡片
 │   │   ├── btop/              # Catppuccin 主题、透明背景
