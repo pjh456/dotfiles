@@ -4,7 +4,11 @@ if pgrep -x rofi >/dev/null 2>&1; then
   pkill -x rofi
   exit 0
 fi
-item=$(cliphist list | rofi -dmenu -p " Clipboard" -display-columns 2 -width 50 -l 15)
+item=$(cliphist list | rofi -dmenu -p " Clipboard" -display-columns 2 -theme-str '
+  window { width: 720px; }
+  listview { columns: 1; lines: 12; }
+  element { padding: 8px 12px; }
+')
 if [ -n "$item" ]; then
   content=$(printf '%s' "$item" | cliphist decode 2>/dev/null)
   if [ -n "$content" ]; then
