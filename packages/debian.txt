@@ -25,3 +25,7 @@ pass
 starship
 fzf
 thefuck
+btop
+fastfetch
+brightnessctl
+libnotify-bin
