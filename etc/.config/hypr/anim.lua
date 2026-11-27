@@ -11,9 +11,10 @@ hl.config({
 	},
 })
 
-hl.animation({ leaf = "windows",       enabled = true, speed = 4, bezier = "easeOutQuint" })
+hl.animation({ leaf = "windows",       enabled = true, speed = 4, bezier = "easeOutQuint", style = "popin 85%" })
 hl.animation({ leaf = "windowsIn",     enabled = true, speed = 4, bezier = "easeOutQuint", style = "popin 80%" })
-hl.animation({ leaf = "windowsOut",    enabled = true, speed = 4, bezier = "easeOutQuint", style = "popin 85%" })
+hl.animation({ leaf = "windowsOut",    enabled = true, speed = 3, bezier = "easeOutQuint", style = "popin 88%" })
+hl.animation({ leaf = "windowsMove",   enabled = true, speed = 4, bezier = "easeOutQuint" })
 hl.animation({ leaf = "fade",          enabled = true, speed = 4, bezier = "easeOutQuint" })
 hl.animation({ leaf = "fadeIn",        enabled = true, speed = 4, bezier = "easeOutQuint" })
 hl.animation({ leaf = "fadeOut",       enabled = true, speed = 4, bezier = "easeOutQuint" })

@@ -122,12 +122,21 @@ hl.config({
 	},
 })
 
+-- No window-level opacity for foot: its background already has alpha=0.88 in
+-- foot.ini. Stacking a window opacity on top fades the glyphs as well, so the
+-- text would render at 0.88 * 0.90 ~= 0.79 and look washed out.
+
+-- Audio/Bluetooth/network tools are occasional card-sized dialogs, not
+-- documents: float them at a fixed share of the monitor and centre them
+-- instead of letting them open tiled or oversized.
 hl.window_rule({
-	name = "opacity_0_90_0_90",
+	name = "floating-tools",
 	match = {
-		class = "^(foot)$",
+		class = "^(org\\.pulseaudio\\.pavucontrol|pavucontrol|blueman-manager|iwgtk)$",
 	},
-	opacity = "0.90 0.90",
+	float = true,
+	size = "monitor_w*0.46 monitor_h*0.56",
+	center = true,
 })
 
 -- Some portals/XWayland dialogs open with their title bar under the top

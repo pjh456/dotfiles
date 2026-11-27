@@ -25,7 +25,7 @@ hl.bind(mainMod .. " + F5", function()
 	notify.ok("Config", "Reloaded")
 end)
 
-hl.bind("CTRL + ALT + A", hl.dsp.exec_cmd("grim -g \"$(slurp)\" - | tee >(wl-copy --type image/png) | cliphist store"))
+hl.bind("CTRL + ALT + A", hl.dsp.exec_cmd("grim -g \"$(slurp -b 1e1e2e66 -c 89b4faff -s cba6f71a -w 2)\" - | tee >(wl-copy --type image/png) | cliphist store"))
 
 -- Media keys drive the same OSD the waybar widgets use.
 hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("~/.local/bin/osd-ctl volume up"), { repeating = true })
