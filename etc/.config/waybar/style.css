@@ -84,21 +84,20 @@ window#waybar {
 }
 
 #workspaces button {
-  /* Every button keeps the same OUTER width (padding + margin = 21px), so the
-     row never reflows. The inactive pill spends 5px of that on each margin, the
-     active one turns it into padding: the painted pill gets 10px wider while the
-     slots, the container and every other number stay exactly where they are.
-     Only the colours are transitioned; animating the padding/margin made GTK
-     round each value separately, which wobbled the row by ~2px mid-animation. */
+  /* Base style = occupied (at least one window). Waybar adds the `empty` class
+     to workspaces without windows, so the three states are: filled = has
+     windows, hairline outline = empty, gradient = current. */
   padding: 0 8px;
   margin: 0 5px;
-  background-color: rgba(69, 71, 90, 0.3);
+  background-color: rgba(49, 50, 68, 0.85);
   background-image: linear-gradient(135deg, rgba(137, 180, 250, 0), rgba(203, 166, 247, 0));
-  color: #6c7086;
+  color: #cdd6f4;
   border-radius: 7px;
   min-width: 20px;
+  box-shadow: inset 0 0 0 1px rgba(205, 214, 244, 0.06);
   transition: background-color 0.25s cubic-bezier(0.23, 1, 0.32, 1),
               background-image 0.25s cubic-bezier(0.23, 1, 0.32, 1),
+              box-shadow 0.25s cubic-bezier(0.23, 1, 0.32, 1),
               color 0.25s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
@@ -112,6 +111,18 @@ window#waybar {
   color: #cdd6f4;
 }
 
+#workspaces button.empty {
+  background-color: rgba(69, 71, 90, 0.10);
+  color: #585b70;
+  box-shadow: inset 0 0 0 1px rgba(69, 71, 90, 0.55);
+}
+
+#workspaces button:hover {
+  background-color: rgba(137, 180, 250, 0.18);
+  color: #89b4fa;
+  box-shadow: inset 0 0 0 1px rgba(137, 180, 250, 0.35);
+}
+
 #workspaces button.active {
   padding: 0 13px;
   margin: 0 0px;
@@ -119,6 +130,7 @@ window#waybar {
   background-image: linear-gradient(135deg, #89b4fa, #cba6f7);
   color: #11111b;
   font-weight: bold;
+  box-shadow: none;
 }
 
 #workspaces button.urgent {
