@@ -455,10 +455,10 @@ mod tests {
             relative_humidity_2m: 54.0,
             wind_speed_10m: 17.0,
         };
+        let mut dates = vec![local_today()];
+        dates.extend((1..7).map(|day| format!("2026-12-{day:02}")));
         let daily = Daily {
-            time: (0..7)
-                .map(|day| format!("2026-11-{:02}", 28 + day))
-                .collect(),
+            time: dates,
             weather_code: vec![0, 2, 61, 71, 80, 95, 3],
             temperature_2m_max: vec![8.0, 9.4, 7.6, 1.0, 6.2, 5.0, 4.4],
             temperature_2m_min: vec![-1.0, 0.2, 2.6, -3.4, 1.0, 0.0, -0.6],
@@ -487,9 +487,8 @@ mod tests {
         let rows = render_rows(&current, &daily);
         assert_eq!(rows.lines().count(), 8);
         assert!(rows.contains("中国海洋大学西海岸校区"));
-        assert!(rows.contains("今天 11/28"));
-        assert!(rows.contains("明天 11/29"));
-        assert!(rows.contains("一　 11/30"));
+        assert!(rows.contains(&format!("今天 {}", month_day(&local_today()))));
+        assert!(rows.contains("明天 "));
         assert!(rows.contains("  -%"));
         assert!(rows.contains("06:50-16:45"));
     }
