@@ -128,6 +128,7 @@ enabling, the sudoers rule.
 | `Super + 1-5`         | Switch workspace                                 |
 | `Super + Shift + 1-5` | Move window to workspace                         |
 | `Super + R`           | Resize mode (arrow keys to resize)               |
+| `XF86Audio*` / `XF86MonBrightness*` | Volume / brightness OSD popup (swaync) |
 
 ## Helper scripts
 
@@ -158,6 +159,7 @@ configs invoke.
 | `weather` | waybar weather module (30 min poll); also caches the 7-day forecast |
 | `weather-forecast` | click on the waybar weather module; renders the cached forecast with rofi |
 | `mpv-profile-watch` | user service; re-runs `mpv-profile-switch` when `net.hadess.PowerProfiles.ActiveProfile` changes (reads the property every 10s: ~2ms, not `tlp-stat`'s ~90ms) |
+| `osd-ctl volume up\|down\|mute`, `osd-ctl brightness up\|down` | Hyprland media keys |
 
 ## File Structure
 
@@ -176,6 +178,9 @@ configs invoke.
 │   ├── .gitconfig
 │   ├── .config/
 │   │   ├── chrome-flags.conf  # Chromium/Electron: wayland native + Intel VA-API
+│   │   ├── starship.toml      # Catppuccin two-line prompt
+│   │   ├── fastfetch/         # Grouped system info card
+│   │   ├── btop/              # Catppuccin theme, transparent background
 │   │   ├── hypr/              # hyprland.lua (+anim/keys/notify), hypridle, hyprlock, hyprpaper, scripts/init.sh
 │   │   ├── waybar/            # Status bar config & style
 │   │   ├── rofi/               # Launcher config
@@ -183,8 +188,10 @@ configs invoke.
 │   │   ├── fcitx5/             # Input method config
 │   │   ├── foot/               # Terminal config
 │   │   └── systemd/user/       # Session services (*.wants/ not tracked)
-│   └── .local/bin/            # powermenu, bt-toggle, power-mode, temperature,
-│                             # weather, weather-forecast, clipmenu, setwp, waybar-reload,
-│                             # mpv-profile-{watch,switch}, on-battery, ...
+│   ├── .local/bin/            # powermenu, bt-toggle, power-mode, temperature,
+│   │                         # weather, weather-forecast, clipmenu, setwp, waybar-reload,
+│   │                         # osd-ctl, mpv-profile-{watch,switch}, on-battery, ...
+│   └── .local/share/
+│       └── fcitx5/themes/     # Self-contained fcitx5 theme (svg + png)
 └── .github/workflows/ci.yml   # shellcheck, JSON check, package resolution, dry-run
 ```

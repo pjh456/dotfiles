@@ -124,6 +124,7 @@ start-hyprland
 | `Super + 1-5`         | 切换工作区                                     |
 | `Super + Shift + 1-5` | 移动窗口到工作区                               |
 | `Super + R`           | 缩放模式（方向键调整大小）                     |
+| `XF86Audio*` / `XF86MonBrightness*` | 音量 / 亮度 OSD 弹窗（swaync） |
 
 ## 辅助脚本
 
@@ -153,6 +154,7 @@ start-hyprland
 | `weather` | waybar 天气模块（30 分钟轮询）；同时把 7 天预报写进缓存 |
 | `weather-forecast` | 点击 waybar 天气图标时用 rofi 展示缓存里的 7 天预报 |
 | `mpv-profile-watch` | user service；`net.hadess.PowerProfiles.ActiveProfile` 变化时重跑 `mpv-profile-switch`（每 10 秒读一次属性，单次约 2ms，而不是 `tlp-stat` 的约 90ms） |
+| `osd-ctl volume up\|down\|mute`、`osd-ctl brightness up\|down` | Hyprland 多媒体键 |
 
 ## 文件结构
 
@@ -171,6 +173,9 @@ start-hyprland
 │   ├── .gitconfig
 │   ├── .config/
 │   │   ├── chrome-flags.conf  # Chromium/Electron：Wayland 原生 + Intel VA-API
+│   │   ├── starship.toml      # Catppuccin 双行提示符
+│   │   ├── fastfetch/         # 分组系统信息卡片
+│   │   ├── btop/              # Catppuccin 主题、透明背景
 │   │   ├── hypr/              # hyprland.lua（+anim/keys/notify）、hypridle、hyprlock、hyprpaper、scripts/init.sh
 │   │   ├── waybar/            # 状态栏配置与样式
 │   │   ├── rofi/               # 启动器配置
@@ -178,8 +183,10 @@ start-hyprland
 │   │   ├── fcitx5/             # 输入法配置
 │   │   ├── foot/               # 终端配置
 │   │   └── systemd/user/       # 会话服务（*.wants/ 不入库）
-│   └── .local/bin/            # powermenu、bt-toggle、power-mode、temperature、
-│                             # weather、clipmenu、setwp、waybar-reload、
-│                             # mpv-profile-{watch,switch}、on-battery 等
+│   ├── .local/bin/            # powermenu、bt-toggle、power-mode、temperature、
+│   │                         # weather、clipmenu、setwp、waybar-reload、
+│   │                         # osd-ctl、mpv-profile-{watch,switch}、on-battery 等
+│   └── .local/share/
+│       └── fcitx5/themes/     # 自包含的 fcitx5 主题（svg + png）
 └── .github/workflows/ci.yml   # shellcheck、JSON 校验、包名解析、干跑
 ```
