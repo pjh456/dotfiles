@@ -188,6 +188,17 @@ start-hyprland
 | `dotctl watch power` | `power-profile.service`（inotify 监听 AC 状态） |
 | `dotctl guard` | `hyprland-guard.service`（日志镜像 + 卡死抓栈） |
 
+### 开发
+
+```bash
+cargo test --manifest-path dotctl/Cargo.toml
+cargo clippy --manifest-path dotctl/Cargo.toml --all-targets -- -D warnings
+```
+
+改完 `dotctl/Cargo.toml` 的版本后打 `dotctl-vX.Y.Z` tag 并推送。release
+workflow 会构建 x86_64-musl 静态二进制、校验 tag 与版本一致、发布
+`SHA256SUMS`，并在 Arch 容器里对产物做一次冒烟测试。
+
 ## 文件结构
 
 ```

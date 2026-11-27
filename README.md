@@ -198,6 +198,17 @@ stopped), and the mpv/power watchers are event-driven instead of polling.
 | `dotctl watch power` | `power-profile.service` (inotify on AC state) |
 | `dotctl guard` | `hyprland-guard.service` (log mirror + hang capture) |
 
+### Development
+
+```bash
+cargo test --manifest-path dotctl/Cargo.toml
+cargo clippy --manifest-path dotctl/Cargo.toml --all-targets -- -D warnings
+```
+
+Bump `dotctl/Cargo.toml`, tag `dotctl-vX.Y.Z`, and push the tag. The release
+workflow builds a static x86_64-musl binary, verifies the tag/version match,
+publishes `SHA256SUMS`, and smoke-tests the asset in an Arch container.
+
 ## File Structure
 
 ```
