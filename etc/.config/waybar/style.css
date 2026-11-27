@@ -8,23 +8,18 @@ window#waybar {
   color: #cdd6f4;
 }
 
-/* Both bars are floating slabs. The 12px inset is the same as Hyprland's
-   gaps_out, so the distance screen->bar and bar->window is identical on
-   every edge (waybar adds its margins to the exclusive zone). */
+/* Both bars are floating slabs. The 12px inset comes from the bar's
+   layer-shell margins in config (margin-*), not from CSS: a CSS margin on
+   the toplevel window is ignored, so it only reserved space without moving
+   the bar. The margins are part of the exclusive zone, which keeps the
+   screen->bar and bar->window distance identical on every edge when combined
+   with Hyprland's gaps_out = 12. */
 #waybar.top-bar,
 #waybar.bottom-bar {
   background-color: rgba(24, 24, 37, 0.72);
   border: 1px solid rgba(137, 180, 250, 0.22);
   border-radius: 14px;
   box-shadow: 0 4px 12px rgba(17, 17, 27, 0.45);
-}
-
-#waybar.top-bar {
-  margin: 12px 12px 0 12px;
-}
-
-#waybar.bottom-bar {
-  margin: 0 12px 12px 12px;
 }
 
 /* Every module is its own small pill; no hard separators. */
