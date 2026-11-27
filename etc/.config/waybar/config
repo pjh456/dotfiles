@@ -51,11 +51,11 @@
     "modules-right": ["network", "custom/bt-toggle", "custom/power-mode", "battery", "tray"],
 
     "hyprland/workspaces": {
-      "disable-scroll": true,
       "all-outputs": true,
+      "enable-bar-scroll": true,
+      "move-to-monitor": true,
       "format": "{name}",
-      "on-click": "activate",
-      "persistent_workspaces": { "1": [], "2": [], "3": [], "4": [], "5": [] }
+      "persistent-workspaces": { "1": [], "2": [], "3": [], "4": [], "5": [] }
     },
     "custom/launcher": {
       "format": "  Menu",
