@@ -84,13 +84,23 @@ window#waybar {
 }
 
 #workspaces button {
-  padding: 0 8px;
+  /* Fixed slot for every workspace. The active state used to add 10px of
+     horizontal padding: GTK animated the width, snapped the last ~2px when the
+     transition ended (it re-measures the label with the final style), and the
+     growing pill changed the module width so the rest of the bar shifted on
+     every switch. Same-size buttons + a colour-only transition remove both.
+     The inactive state carries a fully transparent copy of the gradient so GTK
+     cross-fades the two background-images instead of popping the colour in. */
+  padding: 0 9px;
   margin: 0 2px;
-  background: rgba(69, 71, 90, 0.3);
+  background-color: rgba(69, 71, 90, 0.3);
+  background-image: linear-gradient(135deg, rgba(137, 180, 250, 0), rgba(203, 166, 247, 0));
   color: #6c7086;
   border-radius: 7px;
-  min-width: 20px;
-  transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+  min-width: 28px;
+  transition: background-color 0.25s cubic-bezier(0.23, 1, 0.32, 1),
+              background-image 0.25s cubic-bezier(0.23, 1, 0.32, 1),
+              color 0.25s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 #workspaces button:hover {
@@ -104,10 +114,10 @@ window#waybar {
 }
 
 #workspaces button.active {
-  background: linear-gradient(135deg, #89b4fa, #cba6f7);
+  background-color: transparent;
+  background-image: linear-gradient(135deg, #89b4fa, #cba6f7);
   color: #11111b;
   font-weight: bold;
-  padding: 0 18px;
 }
 
 #workspaces button.urgent {
