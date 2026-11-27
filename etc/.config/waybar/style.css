@@ -60,15 +60,16 @@ window#waybar {
 
 #custom-launcher {
   font-size: 16px;
-  color: #89b4fa;
+  font-weight: bold;
+  color: #11111b;
   padding: 0 20px;
-  margin: 4px 0 4px 4px;
-  background: rgba(49, 50, 68, 0.4);
+  margin: 4px 3px;
+  background: linear-gradient(135deg, #89b4fa, #b4befe);
   border-radius: 8px;
 }
 
 #custom-launcher:hover {
-  background: rgba(137, 180, 250, 0.2);
+  background: linear-gradient(135deg, #b4befe, #89b4fa);
 }
 
 #workspaces {
@@ -113,6 +114,7 @@ window#waybar {
 
 #clock {
   color: #f9e2af;
+  background-color: rgba(49, 50, 68, 0.7);
   font-weight: bold;
   padding: 0 24px;
   font-size: 15px;
@@ -171,9 +173,30 @@ window#waybar {
 }
 
 #custom-uptime {
-  color: #6c7086;
+  color: #a6adc8;
   padding: 0 10px;
   font-size: 12px;
+}
+
+#custom-notification {
+  color: #b4befe;
+  padding: 0 10px;
+}
+
+#custom-notification.notification {
+  color: #f9e2af;
+  background-color: rgba(249, 226, 175, 0.15);
+}
+
+#custom-notification.dnd-notification,
+#custom-notification.dnd-none {
+  color: #f38ba8;
+  background-color: rgba(243, 139, 168, 0.15);
+}
+
+#custom-notification.inhibited-notification,
+#custom-notification.inhibited-none {
+  color: #f38ba8;
 }
 
 #power-profiles-daemon {
@@ -228,12 +251,13 @@ window#waybar {
 }
 
 #pulseaudio {
-  color: #cdd6f4;
+  color: #89b4fa;
   padding: 0 10px;
 }
 
 #pulseaudio.muted {
   color: #f38ba8;
+  background-color: rgba(243, 139, 168, 0.15);
 }
 
 #backlight {
@@ -299,9 +323,9 @@ window#waybar {
 }
 
 #tray {
-  background: rgba(49, 50, 68, 0.4);
-  border-radius: 6px;
-  margin: 4px;
+  background: rgba(49, 50, 68, 0.55);
+  border-radius: 8px;
+  margin: 4px 3px;
   padding: 0 6px;
 }
 
