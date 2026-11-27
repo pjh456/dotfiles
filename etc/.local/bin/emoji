@@ -8,6 +8,35 @@ if pgrep -x rofi >/dev/null 2>&1; then
     exit 0
 fi
 
+picker() {
+    rofi -modi emoji -show emoji \
+        -emoji-format '<span size="x-large">{emoji}</span>   <span foreground="#bac2de">{name}</span>' \
+        -p "  Emoji" \
+        -theme-str 'window { width: 560px; }
+                    /* Only one mode is enabled: drop the tab bar. */
+                    mainbox { children: [inputbar, listview]; }
+                    listview { lines: 10; columns: 1; spacing: 4px; }
+                    element { padding: 8px 12px; border-radius: 10px; }
+                    element selected.normal { background-color: #313244cc; text-color: #cdd6f4; border: 1px; border-color: #89b4fa66; }' \
+        "$@"
+}
+
+# Some Qt/Electron apps (QQ, for one) ignore emoji typed through the
+# virtual-keyboard protocol but paste them from the clipboard fine. The
+# keybind in keys.lua checks the focused window's class before rofi takes
+# focus and passes "paste" for those, so no extra IPC is needed here.
+if [ "$1" = paste ]; then
+    emoji=$(picker -emoji-mode stdout) || exit 0
+    [ -n "$emoji" ] || exit 0
+    printf '%s' "$emoji" | wl-copy
+    if command -v wtype >/dev/null 2>&1; then
+        wtype -M ctrl -k v -m ctrl
+    else
+        notify-send -i face-smile "Emoji" "Copied to the clipboard — press Ctrl+V" 2>/dev/null
+    fi
+    exit 0
+fi
+
 # With wtype (virtual-keyboard protocol) the selection is typed straight into
 # the focused window, like Win+.; without it rofi-emoji falls back to
 # putting the emoji on the clipboard, ready for Ctrl+V.
@@ -16,13 +45,4 @@ if command -v wtype >/dev/null 2>&1; then
     mode=insert
 fi
 
-exec rofi -modi emoji -show emoji \
-    -emoji-mode "$mode" \
-    -emoji-format '<span size="x-large">{emoji}</span>   <span foreground="#bac2de">{name}</span>' \
-    -p "  Emoji" \
-    -theme-str 'window { width: 560px; }
-                /* Only one mode is enabled: drop the tab bar. */
-                mainbox { children: [inputbar, listview]; }
-                listview { lines: 10; columns: 1; spacing: 4px; }
-                element { padding: 8px 12px; border-radius: 10px; }
-                element selected.normal { background-color: #313244cc; text-color: #cdd6f4; border: 1px; border-color: #89b4fa66; }'
+picker -emoji-mode "$mode"

@@ -11,8 +11,14 @@ hl.bind(mainMod .. " + code:9", hl.dsp.exit())
 hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd("~/.local/bin/rofi-toggle -show drun"))
 
 -- Color emoji picker (Windows Win+.): inserts into the focused window when
--- wtype is installed, otherwise copies the emoji and asks for Ctrl+V.
-hl.bind(mainMod .. " + period", hl.dsp.exec_cmd("~/.local/bin/emoji"))
+-- wtype is installed, otherwise copies the emoji and asks for Ctrl+V. QQ
+-- ignores synthesized emoji keys, so it gets clipboard + Ctrl+V instead.
+hl.bind(mainMod .. " + period", function()
+	local w = hl.get_active_window()
+	local app = w and w.class or ""
+	local paste = app == "QQ" or app == "qq" or app == "linuxqq" or app == "com.tencent.qq"
+	hl.exec_cmd("~/.local/bin/emoji" .. (paste and " paste" or ""))
+end)
 
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("/home/pjh123/.local/bin/powermenu"))
 
