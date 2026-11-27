@@ -8,18 +8,23 @@ window#waybar {
   color: #cdd6f4;
 }
 
+/* Both bars are floating slabs. The 12px inset is the same as Hyprland's
+   gaps_out, so the distance screen->bar and bar->window is identical on
+   every edge (waybar adds its margins to the exclusive zone). */
+#waybar.top-bar,
+#waybar.bottom-bar {
+  background-color: rgba(24, 24, 37, 0.72);
+  border: 1px solid rgba(137, 180, 250, 0.22);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(17, 17, 27, 0.45);
+}
+
 #waybar.top-bar {
-  background-color: rgba(24, 24, 37, 0.78);
-  border: 1px solid rgba(137, 180, 250, 0.18);
-  border-radius: 12px;
-  margin: 6px 12px 0 12px;
+  margin: 12px 12px 0 12px;
 }
 
 #waybar.bottom-bar {
-  background-color: rgba(24, 24, 37, 0.78);
-  border: 1px solid rgba(137, 180, 250, 0.18);
-  border-radius: 12px;
-  margin: 0 12px 6px 12px;
+  margin: 0 12px 12px 12px;
 }
 
 /* Every module is its own small pill; no hard separators. */
@@ -37,11 +42,12 @@ window#waybar {
 #custom-bt-toggle,
 #power-profiles-daemon,
 #battery {
-  background-color: rgba(49, 50, 68, 0.55);
-  border-radius: 8px;
+  background-color: rgba(49, 50, 68, 0.65);
+  border: 1px solid rgba(205, 214, 244, 0.06);
+  border-radius: 9px;
   margin: 4px 3px;
   padding: 0 12px;
-  transition: background-color 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 #pulseaudio:hover,
@@ -55,7 +61,8 @@ window#waybar {
 #custom-bt-toggle:hover,
 #power-profiles-daemon:hover,
 #battery:hover {
-  background-color: rgba(69, 71, 90, 0.8);
+  background-color: rgba(69, 71, 90, 0.85);
+  border-color: rgba(137, 180, 250, 0.35);
 }
 
 #custom-launcher {
@@ -65,7 +72,7 @@ window#waybar {
   padding: 0 20px;
   margin: 4px 3px;
   background: linear-gradient(135deg, #89b4fa, #b4befe);
-  border-radius: 8px;
+  border-radius: 9px;
 }
 
 #custom-launcher:hover {
@@ -74,7 +81,8 @@ window#waybar {
 
 #workspaces {
   background: rgba(49, 50, 68, 0.55);
-  border-radius: 8px;
+  border: 1px solid rgba(205, 214, 244, 0.06);
+  border-radius: 9px;
   margin: 4px 3px;
   padding: 2px;
   min-width: 140px;
@@ -85,7 +93,7 @@ window#waybar {
   margin: 0 2px;
   background: rgba(69, 71, 90, 0.3);
   color: #6c7086;
-  border-radius: 8px;
+  border-radius: 7px;
   min-width: 20px;
   transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -116,14 +124,14 @@ window#waybar {
   color: #f9e2af;
   background-color: rgba(49, 50, 68, 0.7);
   font-weight: bold;
-  padding: 0 24px;
+  padding: 0 18px;
   font-size: 15px;
-  min-width: 280px;
+  letter-spacing: 0.5px;
 }
 
 #custom-weather {
   color: #cba6f7;
-  padding: 0 10px;
+  padding: 0 14px;
 }
 
 #custom-weather.wmo0 {
@@ -174,13 +182,11 @@ window#waybar {
 
 #custom-uptime {
   color: #a6adc8;
-  padding: 0 10px;
   font-size: 12px;
 }
 
 #custom-notification {
   color: #b4befe;
-  padding: 0 10px;
 }
 
 #custom-notification.notification {
@@ -199,10 +205,6 @@ window#waybar {
   color: #f38ba8;
 }
 
-#power-profiles-daemon {
-  padding: 0 10px;
-}
-
 #power-profiles-daemon.power-saver {
   color: #74c7ec;
 }
@@ -217,7 +219,6 @@ window#waybar {
 
 #network {
   color: #a6e3a1;
-  padding: 0 10px;
 }
 
 #network.disconnected {
@@ -226,7 +227,6 @@ window#waybar {
 
 #custom-bt-toggle {
   color: #89b4fa;
-  padding: 0 10px;
 }
 
 #custom-bt-toggle.off {
@@ -252,7 +252,6 @@ window#waybar {
 
 #pulseaudio {
   color: #89b4fa;
-  padding: 0 10px;
 }
 
 #pulseaudio.muted {
@@ -262,27 +261,22 @@ window#waybar {
 
 #backlight {
   color: #f9e2af;
-  padding: 0 10px;
 }
 
 #cpu {
   color: #94e2d5;
-  padding: 0 10px;
 }
 
 #memory {
   color: #cba6f7;
-  padding: 0 10px;
 }
 
 #disk {
   color: #fab387;
-  padding: 0 10px;
 }
 
 #custom-temperature {
   color: #cdd6f4;
-  padding: 0 10px;
 }
 
 #custom-temperature.normal {
@@ -307,7 +301,6 @@ window#waybar {
 
 #battery {
   color: #a6e3a1;
-  padding: 0 10px;
 }
 
 #battery.warning {
@@ -324,9 +317,10 @@ window#waybar {
 
 #tray {
   background: rgba(49, 50, 68, 0.55);
-  border-radius: 8px;
+  border: 1px solid rgba(205, 214, 244, 0.06);
+  border-radius: 9px;
   margin: 4px 3px;
-  padding: 0 6px;
+  padding: 0 10px;
 }
 
 #tray menu {
@@ -360,5 +354,5 @@ tooltip label {
 #waybar.top-bar #custom-weather {
   font-size: 16px;
   color: #cba6f7;
-  padding: 0 10px;
+  padding: 0 14px;
 }

@@ -10,7 +10,7 @@
 
     "custom/uptime": {
       "format": " {}",
-      "exec": "uptime -p | sed 's/^up //'",
+      "exec": "uptime -p | sed -E 's/^up //; s/([0-9]+) weeks?/\\1w/; s/([0-9]+) days?/\\1d/; s/([0-9]+) hours?/\\1h/; s/([0-9]+) minutes?/\\1m/; s/,//g'",
       "interval": 60,
       "tooltip": false
     },
@@ -39,7 +39,7 @@
       "escape": true
     },
     "clock": {
-      "format": "   {:%H:%M  %m/%d (%a)}  ",
+      "format": "  {:%H:%M  ·  %m/%d %a}",
       "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
       "interval": 30
     },
