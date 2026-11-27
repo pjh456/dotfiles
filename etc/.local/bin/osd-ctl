@@ -2,6 +2,10 @@
 # Transient OSD for volume/brightness: a swaync notification carrying a
 # progress-bar hint. No extra daemon needed.
 
+# Step applied per keypress, in percent. A tap is a fine nudge; holding the
+# key repeats the step (Hyprland's `repeating` binds).
+STEP=1
+
 notify() {
     notify-send -a osd \
         -h string:x-canonical-private-synchronous:osd \
@@ -14,11 +18,11 @@ volume)
     case "$2" in
     up)
         wpctl set-mute @DEFAULT_AUDIO_SINK@ 0
-        wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
+        wpctl set-volume @DEFAULT_AUDIO_SINK@ "${STEP}%+"
         ;;
     down)
         wpctl set-mute @DEFAULT_AUDIO_SINK@ 0
-        wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+        wpctl set-volume @DEFAULT_AUDIO_SINK@ "${STEP}%-"
         ;;
     mute) wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle ;;
     *)
@@ -48,8 +52,8 @@ volume)
     ;;
 brightness)
     case "$2" in
-    up) brightnessctl set 5%+ >/dev/null ;;
-    down) brightnessctl set 5%- >/dev/null ;;
+    up) brightnessctl set "${STEP}%+" >/dev/null ;;
+    down) brightnessctl set "${STEP}%-" >/dev/null ;;
     *)
         echo "usage: osd-ctl brightness up|down" >&2
         exit 1
