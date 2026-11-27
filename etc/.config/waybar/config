@@ -59,7 +59,7 @@
     },
     "custom/launcher": {
       "format": "  Menu",
-      "on-click": "rofi -show drun",
+      "on-click": "$HOME/.local/bin/rofi-toggle -show drun",
       "tooltip": false
     },
     "network": {

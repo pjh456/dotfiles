@@ -1,5 +1,11 @@
 #!/bin/dash
 
+# Second press closes the open menu instead of failing to start a new rofi.
+if pgrep -x rofi >/dev/null 2>&1; then
+  pkill -x rofi
+  exit 0
+fi
+
 entries="  Shutdown\n  Reboot\n  Lock\n  Suspend\n  Logout"
 
 selected=$(printf "$entries" | rofi -dmenu -p " Power" -theme-str 'window {width: 200px;} listview {columns: 1; lines: 5;} element-text {font: "JetBrainsMono Nerd Font 14";}' -l 5 -width 20)

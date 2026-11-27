@@ -134,8 +134,9 @@ start-hyprland
 |---|---|
 | `setwp <图片>` | 从任意文件设壁纸：`setwp ~/Pictures/wall.jpg`（走 `hyprpaper`，运行中的合成器直接生效） |
 | `unsetwp` | 切回纯黑壁纸（保留 hyprpaper 进程） |
-| `powermenu` | Rofi 电源菜单——`Super + L` 也是调它 |
+| `powermenu` | Rofi 电源菜单——`Super + L` 也是调它，再按一次关闭 |
 | `clipmenu` | 脚本化剪贴板历史：`Super + V` 那条流水线的脚本版，外加"已复制"通知和 `--paste-once` |
+| `rofi-toggle <参数>` | 切换任意 rofi 菜单（`rofi-toggle -show drun`）：没开就开，已开就关 |
 | `waybar-reload` | 改完 waybar 配置后完整杀进程重启（`Super + F5` 只是 `SIGUSR2` 软重载） |
 | `mpv-profile-switch` | 立即把 mpv profile 同步到当前 TLP profile——把 `mpv.conf.{PRF,BAL,SAV}` 链接成 `mpv.conf`。平时由 `mpv-profile-watch` 自动做 |
 | `power-profile-daemon` | 在终端里长跑：inotify 监听插拔电源事件，经 D-Bus power-profiles 接口切换 `performance` / `power-saver` |

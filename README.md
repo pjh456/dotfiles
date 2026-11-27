@@ -140,8 +140,9 @@ configs invoke.
 |---|---|
 | `setwp <image>` | Set the wallpaper from any file: `setwp ~/Pictures/wall.jpg` (goes through `hyprpaper`, so the live compositor keeps it) |
 | `unsetwp` | Back to the solid-black wallpaper (keeps hyprpaper alive) |
-| `powermenu` | Rofi power menu — also the `Super + L` binding |
+| `powermenu` | Rofi power menu — also the `Super + L` binding; a second press closes it |
 | `clipmenu` | Scripted clipboard history: the `Super + V` pipeline, plus a "copied" notification and `--paste-once` |
+| `rofi-toggle <args>` | Toggle any rofi menu (`rofi-toggle -show drun`): opens it, or closes it when already open |
 | `waybar-reload` | Fully kill and restart waybar after editing its config (the `Super + F5` binding only soft-reloads via `SIGUSR2`) |
 | `mpv-profile-switch` | Force-sync the mpv profile to the current TLP profile now — links `mpv.conf.{PRF,BAL,SAV}` → `mpv.conf`. Normally done automatically by `mpv-profile-watch` |
 | `power-profile-daemon` | Run in a terminal: watches AC plug events (inotify) and switches `performance` / `power-saver` on the D-Bus power-profiles interface |

@@ -1,4 +1,9 @@
 #!/bin/dash
+# Second press closes the open menu instead of failing to start a new rofi.
+if pgrep -x rofi >/dev/null 2>&1; then
+  pkill -x rofi
+  exit 0
+fi
 item=$(cliphist list | rofi -dmenu -p " Clipboard" -display-columns 2 -width 50 -l 15)
 if [ -n "$item" ]; then
   content=$(printf '%s' "$item" | cliphist decode 2>/dev/null)

@@ -8,13 +8,13 @@ hl.bind(mainMod .. " + Q", hl.dsp.window.close())
 
 hl.bind(mainMod .. " + code:9", hl.dsp.exit())
 
-hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd("rofi -show drun"))
+hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd("~/.local/bin/rofi-toggle -show drun"))
 
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("/home/pjh123/.local/bin/powermenu"))
 
 hl.bind("ALT + Tab", hl.dsp.exec_cmd("hyprswitch simple"))
 
-hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("cliphist list| rofi -dmenu| cliphist decode| wl-copy"))
+hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("~/.local/bin/clipmenu"))
 
 hl.bind(mainMod .. " + T", hl.dsp.window.float())
 
