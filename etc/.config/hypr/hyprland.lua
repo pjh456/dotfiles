@@ -113,10 +113,19 @@ hl.window_rule({
 	opacity = "0.90 0.90",
 })
 
+-- Workspaces 1-5 are persistent, so an empty workspace still exists and can be
+-- clicked in the waybar workspaces module (an absent workspace is a no-op).
+for i = 1, 5 do
+	hl.workspace_rule({ workspace = tostring(i), persistent = true })
+end
+
 require("keys")
 
 -- Autostart
 hl.on("hyprland.start", function()
 	hl.exec_cmd("~/.config/hypr/scripts/init.sh")
+	-- 崩溃/卡死现场保护：镜像 Hyprland 日志 + 卡死时抓线程栈
+	hl.exec_cmd("~/.config/hypr/scripts/hyprland-guard.sh")
 	hl.exec_cmd("nohup ~/.local/bin/power-profile-daemon > /dev/null 2>&1 &")
+	hl.exec_cmd("systemctl --user import-environment WAYLAND_DISPLAY && systemctl --user start hyprpolkitagent.service")
 end)
