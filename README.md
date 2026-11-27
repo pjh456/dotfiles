@@ -145,7 +145,7 @@ configs invoke.
 | `rofi-toggle <args>` | Toggle any rofi menu (`rofi-toggle -show drun`): opens it, or closes it when already open |
 | `power-mode [status\|next]` | Power profile from the CLI (`power-mode next`); the bar uses waybar's built-in `power-profiles-daemon` module |
 | `waybar-reload` | Restart waybar after editing its config (`systemctl --user restart waybar.service` when it runs under systemd); `Super + F5` calls it together with a Hyprland reload |
-| `mpv-profile-switch` | Force-sync the mpv profile to the current TLP profile now — links `mpv.conf.{PRF,BAL,SAV}` → `mpv.conf`. Normally done automatically by `mpv-profile-watch` |
+| `mpv-profile-switch [profile]` | Force-sync the mpv profile now — links `mpv.conf.{PRF,BAL,SAV}` → `mpv.conf`. With no argument it asks TLP; `mpv-profile-watch` passes the D-Bus value straight in |
 | `power-profile-daemon` | Run in a terminal: watches AC plug events (inotify) and switches `performance` / `power-saver` on the D-Bus power-profiles interface |
 | `on-battery` | Exits 0 only while on battery — for one-liners: `on-battery && mpv-profile-switch` |
 
@@ -157,7 +157,7 @@ configs invoke.
 | `temperature` | waybar temperature module |
 | `weather` | waybar weather module (30 min poll); also caches the 7-day forecast |
 | `weather-forecast` | click on the waybar weather module; renders the cached forecast with rofi |
-| `mpv-profile-watch` | user service; re-runs `mpv-profile-switch` when the TLP profile changes (10s poll) |
+| `mpv-profile-watch` | user service; re-runs `mpv-profile-switch` when `net.hadess.PowerProfiles.ActiveProfile` changes (reads the property every 10s: ~2ms, not `tlp-stat`'s ~90ms) |
 
 ## File Structure
 

@@ -140,7 +140,7 @@ start-hyprland
 | `rofi-toggle <参数>` | 切换任意 rofi 菜单（`rofi-toggle -show drun`）：没开就开，已开就关 |
 | `power-mode [status\|next]` | 命令行切换电源 profile（`power-mode next`）；状态栏改用 waybar 自带的 `power-profiles-daemon` 模块 |
 | `waybar-reload` | 改完 waybar 配置后重启它（由 systemd 托管时走 `systemctl --user restart waybar.service`）；`Super + F5` 会连同 Hyprland 一起重载 |
-| `mpv-profile-switch` | 立即把 mpv profile 同步到当前 TLP profile——把 `mpv.conf.{PRF,BAL,SAV}` 链接成 `mpv.conf`。平时由 `mpv-profile-watch` 自动做 |
+| `mpv-profile-switch [profile]` | 立即把 mpv profile 同步一次——把 `mpv.conf.{PRF,BAL,SAV}` 链接成 `mpv.conf`。不带参数时问 TLP；`mpv-profile-watch` 会把 D-Bus 里的值直接传进来 |
 | `power-profile-daemon` | 在终端里长跑：inotify 监听插拔电源事件，经 D-Bus power-profiles 接口切换 `performance` / `power-saver` |
 | `on-battery` | 仅在电池供电时返回 0，用于一行命令：`on-battery && mpv-profile-switch` |
 
@@ -152,7 +152,7 @@ start-hyprland
 | `temperature` | waybar 温度模块 |
 | `weather` | waybar 天气模块（30 分钟轮询）；同时把 7 天预报写进缓存 |
 | `weather-forecast` | 点击 waybar 天气图标时用 rofi 展示缓存里的 7 天预报 |
-| `mpv-profile-watch` | user service；TLP profile 变化时重跑 `mpv-profile-switch`（10 秒轮询） |
+| `mpv-profile-watch` | user service；`net.hadess.PowerProfiles.ActiveProfile` 变化时重跑 `mpv-profile-switch`（每 10 秒读一次属性，单次约 2ms，而不是 `tlp-stat` 的约 90ms） |
 
 ## 文件结构
 

@@ -1,7 +1,33 @@
 #!/bin/dash
-last=""
-while sleep 10; do
-    raw=$(tlp-stat -s 2>/dev/null | grep -oP 'TLP profile\s*=\s*\K\S+' || echo "balanced/BAT")
-    [ "$raw" != "$last" ] && "$(dirname "$0")/mpv-profile-switch"
-    last="$raw"
+# 跟随 net.hadess.PowerProfiles 的 ActiveProfile 变化，切一次 mpv 配置。
+#
+# 旧实现是 `while sleep 10` + 每轮跑一次 tlp-stat -s（单次约 90ms，因为它要
+# 解析 /etc/tlp.conf），常驻约 1% 的单核 CPU，而 profile 一天只变几次。
+# 现在直接读 D-Bus 属性（单次约 2ms），同样的 10 秒间隔只要约 0.02%，并且
+# 只在值真的变化时才去动 mpv.conf。
+#
+# 为什么不用 dbus-monitor 做完全事件驱动：dash 的阻塞 read 不响应 SIGTERM，
+# 服务停止会卡到 systemd 超时，需要额外的 FIFO/子进程管理才安全。相对
+# 0.02% 的收益，不值得。真要 0 CPU + 即时响应，那是单个 Rust 助手的好例子
+# （zbus 订阅 + 干净退出）。
+
+INTERVAL=10
+IFACE=net.hadess.PowerProfiles
+OBJ=/net/hadess/PowerProfiles
+SWITCH="$(dirname "$0")/mpv-profile-switch"
+
+read_profile() {
+    busctl get-property "$IFACE" "$OBJ" "$IFACE" ActiveProfile 2>/dev/null | cut -d'"' -f2
+}
+
+# 启动时先对齐一次（不带参数，让脚本自己从 TLP 读）
+"$SWITCH"
+last=$(read_profile)
+
+while sleep "$INTERVAL"; do
+    now=$(read_profile)
+    # 接口暂时不在总线上（tlp-pd 重启中）：下一轮再看
+    [ -n "$now" ] || continue
+    [ "$now" = "$last" ] && continue
+    "$SWITCH" "$now" && last=$now
 done
