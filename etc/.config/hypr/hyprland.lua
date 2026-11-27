@@ -132,6 +132,23 @@ for i = 1, 5 do
 	hl.workspace_rule({ workspace = tostring(i), persistent = true })
 end
 
+-- Frosted glass for the shell surfaces. ignore_alpha keeps the transparent
+-- corners of the rounded bars from picking up a square blur halo.
+for _, rule in ipairs({
+	{ name = "blur-waybar", match = { namespace = "^(top-bar|bottom-bar)$" } },
+	{ name = "blur-rofi", match = { namespace = "^rofi$" } },
+	{ name = "blur-swaync-control-center", match = { namespace = "^swaync-control-center$" } },
+	{ name = "blur-swaync-notification-window", match = { namespace = "^swaync-notification-window$" } },
+}) do
+	hl.layer_rule({
+		name = rule.name,
+		match = rule.match,
+		blur = true,
+		blur_popups = true,
+		ignore_alpha = 0.2,
+	})
+end
+
 require("keys")
 
 -- Autostart
