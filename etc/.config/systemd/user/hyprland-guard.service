@@ -1,0 +1,13 @@
+[Unit]
+Description=Hyprland log mirror and hang capture
+BindsTo=hyprland-session.target
+After=hyprland-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/dotctl guard
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=hyprland-session.target

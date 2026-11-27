@@ -1,10 +1,15 @@
 mod bluez;
 mod cli;
 mod cmd;
+mod daemon;
+mod guard;
 mod menu;
+mod mpv;
 mod notify;
 mod osd;
 mod power;
+mod power_watch;
+mod ppd;
 mod reload;
 mod rofi;
 mod sysfs;

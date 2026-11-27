@@ -69,6 +69,23 @@ pub enum Command {
         refresh: bool,
     },
 
+    /// Long-running watchers (mpv profile, AC power profile)
+    Watch {
+        #[command(subcommand)]
+        kind: WatchKind,
+    },
+
+    /// Mirror the Hyprland log and capture a stack trace when it hangs
+    Guard {
+        #[arg(long)]
+        once: bool,
+        #[arg(long)]
+        state_dir: Option<PathBuf>,
+    },
+
+    /// Force-sync the mpv profile now (no argument: read the current PPD profile)
+    Mpv { profile: Option<String> },
+
     /// Check runtime dependencies and report what is missing
     Doctor,
 }
@@ -121,6 +138,18 @@ pub enum WallpaperAction {
 #[derive(Debug, Subcommand)]
 pub enum ReloadTarget {
     Waybar,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum WatchKind {
+    Mpv {
+        #[arg(long)]
+        once: bool,
+    },
+    Power {
+        #[arg(long)]
+        once: bool,
+    },
 }
 
 #[derive(Debug, Subcommand)]

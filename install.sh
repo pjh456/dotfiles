@@ -10,6 +10,9 @@ SERVICES=(
   hyprpaper:hyprpaper
   hypridle:hypridle
   fcitx5-daemon:fcitx5
+  power-profile:dotctl
+  hyprland-guard:dotctl
+  mpv-profile-watch:dotctl
 )
 
 # packages that travel together: excluding the first also excludes the rest
@@ -360,7 +363,7 @@ if [ "$with_systemd" -eq 1 ] && command -v systemctl >/dev/null 2>&1; then
     for s in "${SERVICES[@]}"; do
       unit="${s%%:*}"
       bin="${s##*:}"
-      if ! command -v "$bin" >/dev/null 2>&1; then
+      if ! command -v "$bin" >/dev/null 2>&1 && [ ! -x "$HOME/.local/bin/$bin" ]; then
         echo "skipped $unit.service ($bin not installed)"
         continue
       fi

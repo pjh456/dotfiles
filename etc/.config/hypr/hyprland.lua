@@ -201,8 +201,5 @@ require("keys")
 -- Autostart
 hl.on("hyprland.start", function()
 	hl.exec_cmd("~/.config/hypr/scripts/init.sh")
-	-- 崩溃/卡死现场保护：镜像 Hyprland 日志 + 卡死时抓线程栈
-	hl.exec_cmd("~/.config/hypr/scripts/hyprland-guard.sh")
-	hl.exec_cmd("nohup ~/.local/bin/power-profile-daemon > /dev/null 2>&1 &")
 	hl.exec_cmd("systemctl --user import-environment WAYLAND_DISPLAY && systemctl --user start hyprpolkitagent.service")
 end)

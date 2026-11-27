@@ -2,7 +2,7 @@
 Description=Watch TLP profile changes via D-Bus and switch mpv config
 
 [Service]
-ExecStart=%h/.local/bin/mpv-profile-watch
+ExecStart=%h/.local/bin/dotctl watch mpv
 Restart=always
 
 [Install]

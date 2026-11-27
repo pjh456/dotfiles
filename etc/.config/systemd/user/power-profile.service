@@ -1,0 +1,13 @@
+[Unit]
+Description=Set the power profile from AC state
+After=hyprland-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/dotctl watch power
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=hyprland-session.target
+PartOf=hyprland-session.target

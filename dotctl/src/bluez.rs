@@ -179,14 +179,8 @@ fn refresh_waybar() {
 }
 
 fn launch_blueman() {
-    let Some(path) = std::env::var_os("PATH") else {
-        return;
-    };
-    let found = std::env::split_paths(&path)
-        .map(|dir| dir.join("blueman-manager"))
-        .find(|candidate| candidate.is_file());
-    if let Some(candidate) = found {
-        let _ = Command::new(candidate).spawn();
+    if crate::daemon::have_cmd("blueman-manager") {
+        let _ = Command::new("blueman-manager").spawn();
     }
 }
 

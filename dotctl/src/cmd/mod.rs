@@ -3,8 +3,10 @@ mod status;
 
 use anyhow::Result;
 
-use crate::cli::{BtAction, Cli, Command, MenuKind, OsdTarget, ReloadTarget, WallpaperAction};
-use crate::{bluez, menu, osd, power, reload, rofi, wallpaper, weather};
+use crate::cli::{
+    BtAction, Cli, Command, MenuKind, OsdTarget, ReloadTarget, WallpaperAction, WatchKind,
+};
+use crate::{bluez, guard, menu, mpv, osd, power, power_watch, reload, rofi, wallpaper, weather};
 
 pub fn run(cli: Cli) -> Result<()> {
     match cli.command {
@@ -46,6 +48,12 @@ pub fn run(cli: Cli) -> Result<()> {
                 weather::status()
             }
         }
+        Command::Watch { kind } => match kind {
+            WatchKind::Mpv { once } => mpv::watch(once),
+            WatchKind::Power { once } => power_watch::watch(once),
+        },
+        Command::Guard { once, state_dir } => guard::run(once, state_dir),
+        Command::Mpv { profile } => mpv::switch(profile.as_deref()),
         Command::Doctor => doctor::run(),
     }
 }
