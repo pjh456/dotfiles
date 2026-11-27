@@ -9,11 +9,14 @@ eval "$(starship init bash)"
 
 alias ls='eza --icons=auto'
 alias cat='bat --paging=never'
+alias less='bat --paging=always'
 alias pacman='pacman --color always'
-alias find='fd'
 alias df='duf'
 
+export PAGER="bat"
+
 alias grep='rg --color=auto'
+alias nv='nvim'
 alias zed='zeditor'
 
 alias pon='export http_proxy="http://127.0.0.1:7890"; export https_proxy="http://127.0.0.1:7890"; export no_proxy="localhost,127.0.0.1,.edu.cn,.aliyun.com,.ustc.edu.cn,.hit.edu.cn,.bfsu.edu.cn"'
