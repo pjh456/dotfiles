@@ -3,3 +3,6 @@
 
 # fcitx5 regenerates this keyboard-layout cache on every xkeyboard-config update
 .config/fcitx5/conf/cached_layouts
+
+# Rust build output
+dotctl/target/

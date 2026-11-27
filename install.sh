@@ -21,6 +21,8 @@ with_systemd=1
 with_sudo=1
 with_packages=0
 with_restore=0
+with_cli=0
+cli_from_source=0
 restore_dir=
 NO_PKGS=()
 
@@ -37,6 +39,11 @@ Options:
   --restore [DIR]     undo a deployment: remove deployed files and restore
                       backed-up originals from DIR (default: newest
                       ~/.dotfiles-backup-*)
+  --with-cli          also install/update the dotctl Rust CLI (downloads the
+                      pinned release; falls back to a local cargo build)
+  --cli-from-source   build dotctl locally instead of downloading the release
+                      (implies --with-cli)
+  --no-cli            do not install dotctl (default)
   --no-systemd        skip daemon-reload / service enabling
   --no-sudo           skip the system-level tweaks (bluetooth sudoers rule,
                       acpid media-key patch)
@@ -54,6 +61,9 @@ while [ $# -gt 0 ]; do
       shift
       if [ $# -gt 0 ] && [ -d "$1" ]; then restore_dir="$1"; shift; fi
       ;;
+    --with-cli) with_cli=1; shift ;;
+    --cli-from-source) with_cli=1; cli_from_source=1; shift ;;
+    --no-cli) with_cli=0; shift ;;
     --no-systemd) with_systemd=0; shift ;;
     --no-sudo) with_sudo=0; shift ;;
     --no-*)
@@ -111,11 +121,71 @@ if [ "$with_restore" -eq 1 ]; then
     done < <(find "$restore_dir" -type f -print0)
   fi
 
+  if [ -f "$HOME/.dotfiles-cli-version" ]; then
+    rm -f "$HOME/.local/bin/dotctl" "$HOME/.dotfiles-cli-version"
+    echo "removed the dotctl binary installed by this repo"
+  fi
+
   rm -f "$manifest_file"
   echo "restored $RESTORED file(s) from $restore_dir (deployed files removed)"
   echo "note: systemd enabling, the sudoers rule and the acpid media-key patch are not rolled back"
   exit 0
 fi
+
+# --- 0b. optional: install the dotctl CLI ----------------------------------
+install_dotctl() {
+  local dest="$HOME/.local/bin/dotctl"
+  local version tag asset base tmp
+  version=$(sed -n 's/^version = "\(.*\)"$/\1/p' "$REPO_ROOT/dotctl/Cargo.toml" | head -1)
+  [ -n "$version" ] || { echo "error: cannot read dotctl version from dotctl/Cargo.toml" >&2; return 1; }
+  tag="${DOTCTL_TAG:-dotctl-v$version}"
+  asset="dotctl-x86_64-unknown-linux-musl.tar.gz"
+  base="${DOTCTL_BASE_URL:-https://github.com/pjh456/dotfiles/releases/download/$tag}"
+
+  mkdir -p "$HOME/.local/bin"
+
+  build_from_source() {
+    command -v cargo >/dev/null 2>&1 || {
+      echo "error: dotctl release unavailable and cargo is not installed" >&2
+      echo "       install Rust, or set DOTCTL_BASE_URL to a mirror" >&2
+      return 1
+    }
+    echo "building dotctl from source..."
+    if ! cargo build --locked --release --manifest-path "$REPO_ROOT/dotctl/Cargo.toml"; then
+      echo "error: cargo build failed" >&2
+      return 1
+    fi
+    install -m0755 "$REPO_ROOT/dotctl/target/release/dotctl" "$dest.new"
+  }
+
+  if [ "$cli_from_source" -eq 1 ] || ! command -v curl >/dev/null 2>&1; then
+    build_from_source || return 1
+  elif [ "$(uname -m)" != "x86_64" ]; then
+    echo "note: no prebuilt dotctl for $(uname -m); building from source"
+    build_from_source || return 1
+  else
+    tmp=$(mktemp -d)
+    if curl -fsSL "$base/$asset" -o "$tmp/$asset" 2>/dev/null &&
+      curl -fsSL "$base/SHA256SUMS" -o "$tmp/SHA256SUMS" 2>/dev/null; then
+      if ! (cd "$tmp" && grep -F "  $asset" SHA256SUMS | sha256sum -c - >/dev/null); then
+        rm -rf "$tmp"
+        echo "error: dotctl checksum verification failed" >&2
+        return 1
+      fi
+      tar -xzf "$tmp/$asset" -C "$tmp"
+      install -m0755 "$tmp/dotctl" "$dest.new"
+      rm -rf "$tmp"
+    else
+      rm -rf "$tmp"
+      echo "note: dotctl release $tag not available; building from source"
+      build_from_source || return 1
+    fi
+  fi
+
+  mv "$dest.new" "$dest"
+  printf '%s\n' "$tag" > "$HOME/.dotfiles-cli-version"
+  echo "installed $dest ($("$dest" --version 2>/dev/null || echo unknown))"
+}
 
 # --- 0. optional: install required packages --------------------------------
 if [ "$with_packages" -eq 1 ]; then
@@ -279,6 +349,10 @@ done < <(find "$ETC" -type f -print0)
 
 find "$ETC" -type f | sed "s|$ETC/||" > "$manifest_file"
 echo "deployed $(wc -l < "$manifest_file") file(s) into \$HOME (copies; manifest: $manifest_file)"
+
+if [ "$with_cli" -eq 1 ]; then
+  install_dotctl
+fi
 
 # --- 2. systemd user services ---------------------------------------------
 if [ "$with_systemd" -eq 1 ] && command -v systemctl >/dev/null 2>&1; then

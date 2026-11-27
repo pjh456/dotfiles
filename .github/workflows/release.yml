@@ -1,0 +1,50 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "dotctl-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-musl
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: dotctl
+
+      - name: Install musl toolchain
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq musl-tools
+
+      - name: Build release asset
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#dotctl-v}"
+          grep -q "^version = \"$version\"$" dotctl/Cargo.toml
+
+          cargo build --locked --release --manifest-path dotctl/Cargo.toml \
+            --target x86_64-unknown-linux-musl
+
+          mkdir -p dist
+          cp dotctl/target/x86_64-unknown-linux-musl/release/dotctl dist/dotctl
+          strip dist/dotctl
+          tar -czf "dist/dotctl-x86_64-unknown-linux-musl.tar.gz" -C dist dotctl
+          (cd dist && sha256sum dotctl-x86_64-unknown-linux-musl.tar.gz > SHA256SUMS)
+          file dist/dotctl
+          dist/dotctl --version
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/dotctl-x86_64-unknown-linux-musl.tar.gz
+            dist/SHA256SUMS
+          generate_release_notes: true
