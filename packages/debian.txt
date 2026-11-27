@@ -31,3 +31,6 @@ btop
 fastfetch
 brightnessctl
 libnotify-bin
+curl
+jq
+gdb
