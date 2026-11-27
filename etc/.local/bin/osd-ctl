@@ -1,0 +1,74 @@
+#!/bin/dash
+# Transient OSD for volume/brightness: a swaync notification carrying a
+# progress-bar hint. No extra daemon needed.
+
+notify() {
+    notify-send -a osd \
+        -h string:x-canonical-private-synchronous:osd \
+        -h "int:value:$1" \
+        -t 1200 -i "$2" "$3" "$4"
+}
+
+case "$1" in
+volume)
+    case "$2" in
+    up)
+        wpctl set-mute @DEFAULT_AUDIO_SINK@ 0
+        wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
+        ;;
+    down)
+        wpctl set-mute @DEFAULT_AUDIO_SINK@ 0
+        wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+        ;;
+    mute) wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle ;;
+    *)
+        echo "usage: osd-ctl volume up|down|mute" >&2
+        exit 1
+        ;;
+    esac
+    state=$(wpctl get-volume @DEFAULT_AUDIO_SINK@)
+    pct=$(printf '%s\n' "$state" | awk '{printf "%d", $2 * 100}')
+    case "$state" in
+    *MUTED*)
+        icon=audio-volume-muted
+        text="Muted"
+        ;;
+    *)
+        if [ "$pct" -ge 66 ]; then
+            icon=audio-volume-high
+        elif [ "$pct" -ge 33 ]; then
+            icon=audio-volume-medium
+        else
+            icon=audio-volume-low
+        fi
+        text="$pct%"
+        ;;
+    esac
+    notify "$pct" "$icon" "Volume" "$text"
+    ;;
+brightness)
+    case "$2" in
+    up) brightnessctl set 5%+ >/dev/null ;;
+    down) brightnessctl set 5%- >/dev/null ;;
+    *)
+        echo "usage: osd-ctl brightness up|down" >&2
+        exit 1
+        ;;
+    esac
+    cur=$(brightnessctl get)
+    max=$(brightnessctl max)
+    pct=$((cur * 100 / max))
+    if [ "$pct" -ge 66 ]; then
+        icon=display-brightness-high
+    elif [ "$pct" -ge 33 ]; then
+        icon=display-brightness-medium
+    else
+        icon=display-brightness-low
+    fi
+    notify "$pct" "$icon" "Brightness" "$pct%"
+    ;;
+*)
+    echo "usage: osd-ctl volume|brightness ..." >&2
+    exit 1
+    ;;
+esac
