@@ -84,15 +84,20 @@ window#waybar {
 }
 
 #workspaces button {
+  /* Every button keeps the same OUTER width (padding + margin = 21px), so the
+     row never reflows. The inactive pill spends 5px of that on each margin, the
+     active one turns it into padding: the painted pill gets 10px wider while the
+     slots, the container and every other number stay exactly where they are.
+     Only the colours are transitioned; animating the padding/margin made GTK
+     round each value separately, which wobbled the row by ~2px mid-animation. */
   padding: 0 8px;
-  margin: 0 2px;
+  margin: 0 5px;
   background-color: rgba(69, 71, 90, 0.3);
   background-image: linear-gradient(135deg, rgba(137, 180, 250, 0), rgba(203, 166, 247, 0));
   color: #6c7086;
   border-radius: 7px;
   min-width: 20px;
-  transition: min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              background-color 0.25s cubic-bezier(0.23, 1, 0.32, 1),
+  transition: background-color 0.25s cubic-bezier(0.23, 1, 0.32, 1),
               background-image 0.25s cubic-bezier(0.23, 1, 0.32, 1),
               color 0.25s cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -108,12 +113,8 @@ window#waybar {
 }
 
 #workspaces button.active {
-  /* Grow via min-width, not padding. With a padding transition GTK floored the
-     animated value in the size request: the pill grew, stalled for ~150ms and
-     then snapped the last 1-2px when the transition ended — the stutter.
-     min-width is animated continuously by the layout, so the expansion is
-     smooth and only ~1px of rounding is left at the end. */
-  min-width: 38px;
+  padding: 0 13px;
+  margin: 0 0px;
   background-color: transparent;
   background-image: linear-gradient(135deg, #89b4fa, #cba6f7);
   color: #11111b;
