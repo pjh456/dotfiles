@@ -75,16 +75,28 @@ hl.config({
 
 hl.config({
 	decoration = {
-		rounding = 10,
+		rounding = 12,
 		blur = {
-			enabled = false,
+			enabled = true,
+			size = 6,
+			passes = 2,
+			new_optimizations = true,
+			xray = false,
+			noise = 0.0117,
+			contrast = 0.9,
+			brightness = 0.85,
+			vibrancy = 0.1696,
+			popups = true,
 		},
 		shadow = {
 			enabled = true,
-			range = 4,
+			range = 18,
 			render_power = 3,
-			color = "0x0000008C",
+			color = "rgba(11111b99)",
+			color_inactive = "rgba(11111b55)",
 		},
+		dim_inactive = true,
+		dim_strength = 0.06,
 	},
 })
 
