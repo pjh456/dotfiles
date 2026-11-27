@@ -3,4 +3,7 @@ BLACK="/tmp/hyprpaper_black.png"
 if [ ! -f "$BLACK" ]; then
     magick -size 1x1 xc:black "$BLACK"
 fi
-hyprctl hyprpaper wallpaper ",$BLACK"
+hyprctl hyprpaper "wallpaper ,$BLACK"
+
+# Drop the remembered wallpaper so hyprlock falls back to its solid color.
+rm -f "${XDG_CACHE_HOME:-$HOME/.cache}/current_wallpaper"
