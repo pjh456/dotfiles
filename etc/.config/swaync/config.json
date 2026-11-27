@@ -40,36 +40,28 @@
       "actions": [
         {
           "label": "",
-          "type": "toggle",
-          "active": true,
-          "command": "sh -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && hyprlock'",
-          "active-command": "hyprlock"
+          "type": "button",
+          "command": "hyprlock"
         },
         {
           "label": "",
-          "type": "toggle",
-          "active": true,
-          "command": "sh -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && rfkill block bluetooth || rfkill unblock bluetooth'",
-          "active-command": "sh -c 'rfkill unblock bluetooth && notify-send Bluetooth On'",
-          "inactive-command": "sh -c 'rfkill block bluetooth && notify-send Bluetooth Off'"
+          "type": "button",
+          "command": "sh -c '$HOME/.local/bin/bt-toggle toggle'"
         },
         {
           "label": "",
-          "type": "toggle",
-          "active": true,
-          "command": "sh -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && systemctl suspend'"
+          "type": "button",
+          "command": "systemctl suspend"
         },
         {
           "label": "",
-          "type": "toggle",
-          "active": true,
-          "command": "sh -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && poweroff'"
+          "type": "button",
+          "command": "poweroff"
         },
         {
           "label": "",
-          "type": "toggle",
-          "active": true,
-          "command": "sh -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && reboot'"
+          "type": "button",
+          "command": "reboot"
         }
       ]
     },
