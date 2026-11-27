@@ -12,7 +12,7 @@ gsettings set org.gnome.desktop.interface color-scheme prefer-dark
 # 由 systemd / D-Bus 拉起的进程（portal、polkit 认证框、托盘应用）不会继承
 # Hyprland 的 hl.env，必须把这些变量显式灌进 systemd 和 D-Bus 激活环境，
 # 否则它们的弹窗会以默认亮色主题启动。
-theme_env="GTK_THEME XCURSOR_THEME XCURSOR_SIZE QT_QPA_PLATFORMTHEME QT_QPA_PLATFORM"
+theme_env="GTK_THEME XCURSOR_THEME XCURSOR_SIZE QT_QPA_PLATFORMTHEME QT_QPA_PLATFORM GDK_BACKEND"
 systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE XDG_RUNTIME_DIR $theme_env
 dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE XDG_RUNTIME_DIR DISPLAY $theme_env
 

@@ -30,6 +30,10 @@ hl.env("QT_IM_MODULE", "fcitx")
 
 hl.env("XMODIFIERS", "@im=fcitx")
 
+-- GTK3 defaults to XWayland here; force the Wayland backend so Thunar,
+-- pavucontrol, zathura, the portal dialogs, etc. are native clients.
+hl.env("GDK_BACKEND", "wayland")
+
 hl.monitor({
 	output = "",
 	mode = "preferred",
