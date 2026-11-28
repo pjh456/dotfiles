@@ -41,10 +41,11 @@ git clone https://github.com/pjh456/dotfiles ~/dotfiles
 
 不带参数时 `install.sh` 会：
 
-- 把已存在的 dotfiles 备份到 `~/.dotfiles-backup-<时间戳>/`，然后以
-  普通文件拷贝的方式把 `etc/` 里的全部内容放进 `$HOME`；
+- 把已存在的 dotfiles 备份到 `~/.dotfiles-backup-<时间戳>/`，然后调用
+  `dotctl install` 把 `etc/` 里的内容作为普通文件复制到 `$HOME`
+  （备份、manifest 和 prune 都在 Rust 里）；
 - 把固定版本的 `dotctl` release 装到 `~/.local/bin`（校验 checksum；
-  `--no-cli` 跳过，`--cli-from-source` 强制本地编译）；
+  `--no-cli` 只使用已有二进制，`--cli-from-source` 强制本地编译）；
 - 启用主程序已安装的会话服务（`systemctl --user`）；
 - 写入按需蓝牙的 NOPASSWD sudoers 规则（`systemctl` start/stop 和
   `rfkill unblock`），并记住已写入，重跑时不再要求输入密码；
@@ -63,7 +64,7 @@ git clone https://github.com/pjh456/dotfiles ~/dotfiles
 | `--restore [DIR]` | 回滚一次部署：删除已部署的文件（按 `~/.dotfiles-deployed` 清单），并从 `DIR` 还原备份的原始文件（默认：最新的 `~/.dotfiles-backup-*`）。systemd 启用、sudoers 规则和 acpid 改动不会回滚。 |
 | `--with-cli` | 安装/更新 `dotctl`（默认）。下载固定版本的 `dotctl-v<version>` release 并校验 `SHA256SUMS`，必要时回退到 `cargo build`。 |
 | `--cli-from-source` | 不走 release，本地编译 `dotctl`。 |
-| `--no-cli` | 不安装/更新 `dotctl`。 |
+| `--no-cli` | 不安装/更新 `dotctl`；使用已安装的二进制或 `DOTCTL_BIN`（安装器本身需要它）。 |
 | `--no-systemd` | 跳过 `daemon-reload` 和会话服务启用。 |
 | `--no-sudo` | 跳过系统级调整：蓝牙 sudoers 规则、背光 udev 规则、acpid 多媒体键去重。 |
 | `-h`, `--help` | 显示用法。 |
@@ -157,7 +158,8 @@ start-hyprland
 
 `install.sh` 会下载固定版本的 `dotctl-v<version>` release（x86_64 musl 静态
 二进制），校验 `SHA256SUMS`，下载不可用时回退到本地 `cargo build`。
-`--no-cli` 跳过安装，`--cli-from-source` 强制本地编译。
+`--no-cli` 只使用已有二进制（或 `DOTCTL_BIN`），安装器本身仍需要它；
+`--cli-from-source` 强制本地编译。
 
 热路径不再 fork 一堆进程：`status temp` 直接读 hwmon（约 0.5ms，旧的
 `sensors | awk` 约 20ms）；`status bt` 不再调用 `bluetoothctl`（服务停止时
@@ -178,6 +180,8 @@ start-hyprland
 | `dotctl on-battery` | 仅在电池供电时返回 0（给 hypridle 用） |
 | `dotctl doctor` | 检查 hwmon、D-Bus、Hyprland socket 和外部命令 |
 | `dotctl guard --once` | 探测一次 Hyprland 是否活着；不带 `--once` 常驻镜像日志 |
+| `dotctl install --repo-root ~/dotfiles` | 把 `etc/` 部署到 `$HOME`（通常由 `install.sh` 调用） |
+| `dotctl restore [DIR]` | 回滚一次部署（通常由 `install.sh --restore` 调用） |
 
 ### 配置自动调用
 

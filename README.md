@@ -44,9 +44,11 @@ git clone https://github.com/pjh456/dotfiles ~/dotfiles
 By default `install.sh`:
 
 - backs up any existing dotfiles to `~/.dotfiles-backup-<timestamp>/`, then
-  copies everything from `etc/` into `$HOME` as regular files;
+  uses `dotctl install` to copy everything from `etc/` into `$HOME` as
+  regular files (backup, manifest and pruning live in Rust);
 - installs the pinned `dotctl` release into `~/.local/bin` (checksum-verified;
-  `--no-cli` skips it, `--cli-from-source` forces a local build);
+  `--no-cli` leaves an existing binary alone, `--cli-from-source` forces a
+  local build);
 - enables the session services whose binaries are installed (`systemctl --user`);
 - writes the NOPASSWD sudoers rule for on-demand bluetooth (`systemctl`
   start/stop plus `rfkill unblock`) and remembers it, so re-runs don't ask
@@ -67,7 +69,7 @@ Options:
 | `--restore [DIR]` | Undo a deployment: remove the deployed files (tracked in `~/.dotfiles-deployed`) and restore the backed-up originals from `DIR` (default: newest `~/.dotfiles-backup-*`). Systemd enabling, the sudoers rule and the acpid patch are not rolled back. |
 | `--with-cli` | Install/update `dotctl` (default). Downloads the pinned `dotctl-v<version>` release and verifies `SHA256SUMS`; falls back to `cargo build` if needed. |
 | `--cli-from-source` | Build `dotctl` locally instead of downloading the release. |
-| `--no-cli` | Do not install/update `dotctl`. |
+| `--no-cli` | Do not install/update `dotctl`; use an existing binary or `DOTCTL_BIN` (the installer itself needs one). |
 | `--no-systemd` | Skip `daemon-reload` and enabling the session services. |
 | `--no-sudo` | Skip the system-level tweaks: the bluetooth sudoers rule, the backlight udev rule and the acpid media-key patch. |
 | `-h`, `--help` | Show usage. |
@@ -165,8 +167,9 @@ old shell scripts are gone.
 
 `install.sh` installs the pinned `dotctl-v<version>` release from GitHub
 (a static x86_64 musl binary), verifies `SHA256SUMS`, and falls back to a
-local `cargo build` if the download is unavailable. Use `--no-cli` to skip
-it, or `--cli-from-source` to force a local build.
+local `cargo build` if the download is unavailable. Use `--no-cli` to leave
+the installed binary alone (the installer still needs an existing one or
+`DOTCTL_BIN`), or `--cli-from-source` to force a local build.
 
 The hot paths avoid the old process fan-out: `status temp` reads hwmon
 directly (~0.5ms instead of ~20ms for `sensors | awk`), `status bt` never
@@ -188,6 +191,8 @@ stopped), and the mpv/power watchers are event-driven instead of polling.
 | `dotctl on-battery` | Exit 0 only while on battery (hypridle one-liners) |
 | `dotctl doctor` | Check hwmon, D-Bus, Hyprland socket and external commands |
 | `dotctl guard --once` | Probe Hyprland liveness once; `dotctl guard` runs the log mirror |
+| `dotctl install --repo-root ~/dotfiles` | Deploy `etc/` into `$HOME` (normally called by `install.sh`) |
+| `dotctl restore [DIR]` | Undo a deployment (normally called by `install.sh --restore`) |
 
 ### Invoked by the configs
 

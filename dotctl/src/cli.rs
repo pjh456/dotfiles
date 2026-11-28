@@ -88,6 +88,21 @@ pub enum Command {
     /// Force-sync the mpv profile now (no argument: read the current PPD profile)
     Mpv { profile: Option<String> },
 
+    /// Deploy etc/ into $HOME (used by install.sh)
+    Install {
+        #[arg(long, default_value = ".")]
+        repo_root: PathBuf,
+        #[arg(long, hide = true)]
+        home: Option<PathBuf>,
+    },
+
+    /// Undo a deployment (used by install.sh --restore)
+    Restore {
+        dir: Option<PathBuf>,
+        #[arg(long, hide = true)]
+        home: Option<PathBuf>,
+    },
+
     /// Check runtime dependencies and report what is missing
     Doctor,
 }

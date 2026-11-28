@@ -25,6 +25,7 @@ with_sudo=1
 with_packages=0
 with_restore=0
 with_cli=1
+packages_only=0
 cli_from_source=0
 restore_dir=
 NO_PKGS=()
@@ -45,7 +46,9 @@ Options:
   --with-cli          install/update the dotctl Rust CLI (default; downloads
                       the pinned release, falls back to a local cargo build)
   --cli-from-source   build dotctl locally instead of downloading the release
-  --no-cli            do not install/update dotctl
+  --no-cli            do not install/update dotctl (use an existing binary
+                      or DOTCTL_BIN)
+  --packages-only     stop after the --packages step (used by CI)
   --no-systemd        skip daemon-reload / service enabling
   --no-sudo           skip the system-level tweaks (bluetooth sudoers rule,
                       acpid media-key patch)
@@ -66,6 +69,7 @@ while [ $# -gt 0 ]; do
     --with-cli) with_cli=1; shift ;;
     --cli-from-source) with_cli=1; cli_from_source=1; shift ;;
     --no-cli) with_cli=0; shift ;;
+    --packages-only) packages_only=1; shift ;;
     --no-systemd) with_systemd=0; shift ;;
     --no-sudo) with_sudo=0; shift ;;
     --no-*)
@@ -83,89 +87,6 @@ if [ "${#NO_PKGS[@]}" -gt 0 ] && [ "$with_packages" -eq 0 ]; then
 fi
 
 [ -d "$ETC" ] || { echo "error: $ETC not found (run from a clone of this repo)" >&2; exit 1; }
-
-# --- R. restore: undo a previous deployment --------------------------------
-manifest_file="$HOME/.dotfiles-deployed"
-
-if [ "$with_restore" -eq 1 ]; then
-  if [ -z "$restore_dir" ]; then
-    restore_dir=$(ls -1d "$HOME"/.dotfiles-backup-* 2>/dev/null | sort | tail -1 || true)
-  fi
-  clean_restore=0
-  if [ -z "$restore_dir" ] || [ ! -d "$restore_dir" ]; then
-    if [ -f "$manifest_file" ]; then
-      echo "no backup dir (clean install); removing deployed files only"
-      restore_dir="/nonexistent"
-      clean_restore=1
-    else
-      echo "error: backup dir not found: ${restore_dir:-<none>}" >&2
-      exit 1
-    fi
-  fi
-
-  restore_one() {
-    local src="$1" target
-    target="$HOME/${src#"$restore_dir"/}"
-    if [ -e "$target" ]; then
-      rm -f "$target"
-    fi
-    mkdir -p "$(dirname "$target")"
-    mv "$src" "$target"
-    RESTORED=$((RESTORED + 1))
-  }
-
-  RESTORED=0
-  if [ -f "$manifest_file" ]; then
-    while IFS= read -r rel; do
-      [ -n "$rel" ] || continue
-      if [ -e "$restore_dir/$rel" ]; then
-        restore_one "$restore_dir/$rel"
-      elif [ -e "$HOME/$rel" ]; then
-        rm -f "$HOME/$rel"
-      fi
-    done < "$manifest_file"
-  else
-    echo "warning: no manifest ($manifest_file), restoring everything in the backup" >&2
-    while IFS= read -r -d '' b; do
-      restore_one "$b"
-    done < <(find "$restore_dir" -type f -print0)
-  fi
-
-  if [ "$with_systemd" -eq 1 ] && command -v systemctl >/dev/null 2>&1; then
-    for unit in power-profile hyprland-guard mpv-profile-watch; do
-      if systemctl --user disable --now "$unit.service" >/dev/null 2>&1; then
-        echo "disabled $unit.service"
-      fi
-    done
-  fi
-
-  # Files removed from etc/ during the migration live under pruned/. Put them
-  # back as part of a restore so the pre-migration scripts are usable again.
-  if [ -d "$restore_dir/pruned" ]; then
-    while IFS= read -r -d '' src; do
-      rel="${src#"$restore_dir/pruned"/}"
-      target="$HOME/$rel"
-      mkdir -p "$(dirname "$target")"
-      rm -f "$target"
-      mv "$src" "$target"
-      RESTORED=$((RESTORED + 1))
-    done < <(find "$restore_dir/pruned" -type f -print0)
-  fi
-
-  if [ -f "$HOME/.dotfiles-cli-version" ]; then
-    rm -f "$HOME/.local/bin/dotctl" "$HOME/.dotfiles-cli-version"
-    echo "removed the dotctl binary installed by this repo"
-  fi
-
-  rm -f "$manifest_file"
-  if [ "$clean_restore" -eq 1 ]; then
-    echo "removed deployed files (there was no backup to restore)"
-  else
-    echo "restored $RESTORED file(s) from $restore_dir (deployed files removed)"
-  fi
-  echo "note: the sudoers rule and the acpid media-key patch are not rolled back"
-  exit 0
-fi
 
 # --- 0b. optional: install the dotctl CLI ----------------------------------
 install_dotctl() {
@@ -221,6 +142,56 @@ install_dotctl() {
   printf '%s\n' "$tag" > "$HOME/.dotfiles-cli-version"
   echo "installed $dest ($("$dest" --version 2>/dev/null || echo unknown))"
 }
+
+ensure_dotctl() {
+  if [ -n "${DOTCTL_BIN:-}" ]; then
+    [ -x "$DOTCTL_BIN" ] || {
+      echo "error: DOTCTL_BIN is not executable: $DOTCTL_BIN" >&2
+      exit 1
+    }
+    DOTCTL="$DOTCTL_BIN"
+  elif [ "$with_cli" -eq 1 ]; then
+    install_dotctl
+    DOTCTL="$HOME/.local/bin/dotctl"
+  elif [ -x "$HOME/.local/bin/dotctl" ]; then
+    DOTCTL="$HOME/.local/bin/dotctl"
+  else
+    echo "error: dotctl is not installed; run without --no-cli or set DOTCTL_BIN" >&2
+    exit 1
+  fi
+}
+
+ensure_dotctl_for_restore() {
+  if [ -n "${DOTCTL_BIN:-}" ] && [ -x "$DOTCTL_BIN" ]; then
+    DOTCTL="$DOTCTL_BIN"
+  elif [ -x "$HOME/.local/bin/dotctl" ]; then
+    DOTCTL="$HOME/.local/bin/dotctl"
+  else
+    ensure_dotctl
+  fi
+}
+
+# --- R. restore: undo a previous deployment --------------------------------
+if [ "$with_restore" -eq 1 ]; then
+  ensure_dotctl_for_restore
+
+  if [ "$with_systemd" -eq 1 ] && command -v systemctl >/dev/null 2>&1; then
+    for unit in power-profile hyprland-guard mpv-profile-watch; do
+      if systemctl --user disable --now "$unit.service" >/dev/null 2>&1; then
+        echo "disabled $unit.service"
+      fi
+    done
+  fi
+
+  if [ -n "$restore_dir" ]; then
+    "$DOTCTL" restore "$restore_dir"
+  else
+    "$DOTCTL" restore
+  fi
+
+  echo "note: the sudoers rule and the acpid media-key patch are not rolled back"
+  exit 0
+fi
 
 # --- 0. optional: install required packages --------------------------------
 if [ "$with_packages" -eq 1 ]; then
@@ -343,71 +314,14 @@ if [ "$with_packages" -eq 1 ]; then
   esac
 fi
 
-# --- 1. back up real conflicts, then copy everything from etc/ -------------
-in_manifest() {
-  [ -f "$manifest_file" ] && grep -qxF "$1" "$manifest_file"
-}
-
-backup_dir="$HOME/.dotfiles-backup-$(date +%Y%m%d-%H%M%S)"
-to_backup=()
-
-# pass 1: clear symlink-era artifacts, collect real conflicts for backup
-while IFS= read -r -d '' f; do
-  rel="${f#"$ETC"/}"
-  target="$HOME/$rel"
-  if [ -L "$target" ] && [ "$(readlink -f "$target")" = "$(readlink -f "$f")" ]; then
-    rm "$target"
-  elif [ -e "$target" ] && { ! in_manifest "$rel" || ! cmp -s "$f" "$target"; }; then
-    to_backup+=("$target")
-  fi
-done < <(find "$ETC" -type f -print0)
-
-if [ "${#to_backup[@]}" -gt 0 ]; then
-  mkdir -p "$backup_dir"
-  for t in "${to_backup[@]}"; do
-    rel="${t#"$HOME"/}"
-    mkdir -p "$backup_dir/$(dirname "$rel")"
-    mv "$t" "$backup_dir/$rel"
-  done
-  echo "backed up ${#to_backup[@]} existing file(s) -> $backup_dir"
+if [ "$packages_only" -eq 1 ]; then
+  echo "package installation complete (--packages-only)"
+  exit 0
 fi
 
-# pass 2: copy (skip files already up to date from a previous deployment)
-while IFS= read -r -d '' f; do
-  rel="${f#"$ETC"/}"
-  if [ -e "$HOME/$rel" ] && in_manifest "$rel" && cmp -s "$f" "$HOME/$rel"; then
-    continue
-  fi
-  mkdir -p "$HOME/$(dirname "$rel")"
-  cp -a "$f" "$HOME/$rel"
-done < <(find "$ETC" -type f -print0)
-
-new_manifest="$manifest_file.new"
-find "$ETC" -type f | sed "s|$ETC/||" > "$new_manifest"
-
-# Files deployed by an older revision but removed from etc/ are moved to the
-# backup dir instead of lingering forever in $HOME.
-if [ -f "$manifest_file" ]; then
-  while IFS= read -r rel; do
-    [ -n "$rel" ] || continue
-    if grep -qxF "$rel" "$new_manifest"; then
-      continue
-    fi
-    target="$HOME/$rel"
-    if [ ! -e "$target" ] && [ ! -L "$target" ]; then
-      continue
-    fi
-    mkdir -p "$backup_dir/pruned/$(dirname "$rel")"
-    mv "$target" "$backup_dir/pruned/$rel"
-    echo "pruned $rel (no longer in etc/)"
-  done < "$manifest_file"
-fi
-mv "$new_manifest" "$manifest_file"
-echo "deployed $(wc -l < "$manifest_file") file(s) into \$HOME (copies; manifest: $manifest_file)"
-
-if [ "$with_cli" -eq 1 ]; then
-  install_dotctl
-fi
+# --- 1. deploy etc/ into $HOME ---------------------------------------------
+ensure_dotctl
+"$DOTCTL" install --repo-root "$REPO_ROOT"
 
 # --- 2. systemd user services ---------------------------------------------
 if [ "$with_systemd" -eq 1 ] && command -v systemctl >/dev/null 2>&1; then

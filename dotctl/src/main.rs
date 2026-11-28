@@ -3,6 +3,7 @@ mod cli;
 mod cmd;
 mod daemon;
 mod guard;
+mod install;
 mod menu;
 mod mpv;
 mod notify;
