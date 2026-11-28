@@ -39,9 +39,17 @@ pub fn run(cli: Cli) -> Result<()> {
             MenuKind::Power => menu::power(),
             MenuKind::Launcher => menu::launcher(),
         },
-        Command::Weather { forecast, refresh } => {
+        Command::Weather {
+            forecast,
+            refresh,
+            retry,
+        } => {
             if refresh {
-                weather::refresh()
+                if retry {
+                    weather::refresh_with_retries()
+                } else {
+                    weather::refresh()
+                }
             } else if forecast {
                 weather::forecast()
             } else {

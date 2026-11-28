@@ -111,6 +111,10 @@ pub fn status() -> Result<()> {
 }
 
 pub fn refresh() -> Result<()> {
+    refresh_once()
+}
+
+pub fn refresh_with_retries() -> Result<()> {
     let mut last = None;
     for attempt in 0..3 {
         match refresh_once() {
@@ -369,7 +373,7 @@ fn spawn_refresh() {
         return;
     };
     let _ = Command::new(exe)
-        .args(["weather", "--refresh"])
+        .args(["weather", "--refresh", "--retry"])
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .spawn();

@@ -67,6 +67,8 @@ pub enum Command {
         forecast: bool,
         #[arg(long, hide = true)]
         refresh: bool,
+        #[arg(long, hide = true)]
+        retry: bool,
     },
 
     /// Long-running watchers (mpv profile, AC power profile)
