@@ -110,6 +110,20 @@ pub fn power_on() -> Result<()> {
 
 /// Start Bluetooth on demand, power the adapter on, and refresh Waybar.
 pub fn toggle() -> Result<()> {
+    // A soft rfkill block survives across boots and makes `bluetoothctl power
+    // on` fail even though the service starts. The sudoers rule installed by
+    // install.sh allows exactly this command without a password.
+    if crate::daemon::have_cmd("rfkill") {
+        match Command::new("sudo")
+            .args(["-n", "rfkill", "unblock", "bluetooth"])
+            .status()
+        {
+            Ok(status) if status.success() => {}
+            Ok(status) => eprintln!("dotctl: rfkill unblock bluetooth failed with {status}"),
+            Err(err) => eprintln!("dotctl: rfkill unblock bluetooth: {err}"),
+        }
+    }
+
     if !service_active() {
         let status = Command::new("sudo")
             .args(["-n", "systemctl", "start", SERVICE])

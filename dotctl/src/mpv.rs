@@ -3,6 +3,8 @@ use std::fs;
 use std::os::unix::fs::symlink;
 use std::path::PathBuf;
 use std::process::Command;
+use std::thread;
+use std::time::Duration;
 
 use anyhow::{Context, Result};
 use futures_util::StreamExt;
@@ -36,59 +38,73 @@ pub fn switch(profile: Option<&str>) -> Result<()> {
 pub fn watch(once: bool) -> Result<()> {
     daemon::install_exit_handler()?;
 
-    let connection = zbus::block_on(ppd::connect())?;
-    let initial =
-        zbus::block_on(ppd::active_profile(&connection)).unwrap_or_else(|_| "balanced".to_owned());
-    switch(Some(&initial))?;
-
     if once {
+        let connection = zbus::block_on(ppd::connect())?;
+        let initial =
+            zbus::block_on(ppd::active_profile(&connection)).unwrap_or_else(|_| current_profile());
+        switch(Some(&initial))?;
         return Ok(());
     }
 
-    zbus::block_on(async {
-        let proxy = zbus::fdo::PropertiesProxy::builder(&connection)
-            .destination(ppd::INTERFACE)
-            .path(ppd::PATH)
-            .build()
-            .await?;
-        let mut stream = proxy.receive_properties_changed().await?;
-
-        while let Some(message) = stream.next().await {
-            let args = match message.args() {
-                Ok(args) => args,
-                Err(err) => {
-                    eprintln!("dotctl: mpv watch: invalid PropertiesChanged: {err}");
-                    continue;
-                }
-            };
-            if args.interface_name.as_str() != ppd::INTERFACE {
-                continue;
-            }
-            let Some(value) = args.changed_properties.get("ActiveProfile") else {
-                continue;
-            };
-            let Ok(profile) = value.downcast_ref::<&str>() else {
-                continue;
-            };
-
-            if let Err(err) = switch(Some(profile)) {
-                eprintln!("dotctl: mpv watch: {err:#}");
-            }
-            daemon::refresh_waybar();
+    // PPD or the system bus can restart independently of this service. A
+    // closed PropertiesChanged stream is not fatal: reconnect and resubscribe.
+    loop {
+        if let Err(err) = watch_session() {
+            eprintln!("dotctl: mpv watch: {err:#}");
         }
+        thread::sleep(Duration::from_secs(1));
+    }
+}
 
-        Ok::<(), anyhow::Error>(())
-    })?;
+fn watch_session() -> Result<()> {
+    let connection = zbus::block_on(ppd::connect())?;
+    let initial =
+        zbus::block_on(ppd::active_profile(&connection)).unwrap_or_else(|_| current_profile());
+    if let Err(err) = switch(Some(&initial)) {
+        eprintln!("dotctl: mpv watch: initial switch: {err:#}");
+    }
+
+    zbus::block_on(subscribe(&connection))
+}
+
+async fn subscribe(connection: &zbus::Connection) -> Result<()> {
+    let proxy = zbus::fdo::PropertiesProxy::builder(connection)
+        .destination(ppd::INTERFACE)
+        .path(ppd::PATH)
+        .build()
+        .await?;
+    let mut stream = proxy.receive_properties_changed().await?;
+
+    while let Some(message) = stream.next().await {
+        let args = match message.args() {
+            Ok(args) => args,
+            Err(err) => {
+                eprintln!("dotctl: mpv watch: invalid PropertiesChanged: {err}");
+                continue;
+            }
+        };
+        if args.interface_name.as_str() != ppd::INTERFACE {
+            continue;
+        }
+        let Some(value) = args.changed_properties.get("ActiveProfile") else {
+            continue;
+        };
+        let Ok(profile) = value.downcast_ref::<&str>() else {
+            continue;
+        };
+
+        if let Err(err) = switch(Some(profile)) {
+            eprintln!("dotctl: mpv watch: {err:#}");
+        }
+        daemon::refresh_waybar();
+    }
 
     Ok(())
 }
 
 fn current_profile() -> String {
-    ppd::active_profile_now().unwrap_or_else(|_| {
-        tlp_profile()
-            .or_else(|| Some("balanced".to_owned()))
-            .unwrap()
-    })
+    ppd::active_profile_now()
+        .unwrap_or_else(|_| tlp_profile().unwrap_or_else(|| "balanced".to_owned()))
 }
 
 fn tlp_profile() -> Option<String> {

@@ -1,5 +1,5 @@
 use std::fs;
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 use anyhow::{Context, Result, bail};
 use notify_rust::{Hint, Notification, Timeout};
@@ -53,7 +53,10 @@ pub fn brightness(action: BrightnessAction) -> Result<()> {
         BrightnessAction::Up => format!("{STEP}+"),
         BrightnessAction::Down => format!("{STEP}-"),
     };
-    if let Err(err) = run(Command::new("brightnessctl").args(["set", &step])) {
+    if let Err(err) = run(Command::new("brightnessctl")
+        .args(["set", &step])
+        .stdout(Stdio::null()))
+    {
         // A missing udev rule or the video group is common; still show the
         // current value instead of leaving the keypress silent.
         eprintln!("dotctl: could not change brightness: {err:#}");

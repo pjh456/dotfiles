@@ -16,7 +16,7 @@ Services are managed via `systemd --user`:
 - `init.sh` imports Wayland env vars into systemd, then starts `hyprland-session.target`
 - All daemons (`waybar`, `swaync`, `hyprpaper`, `hypridle`, `fcitx5-daemon`, `power-profile`, `hyprland-guard`) bind to this target via `BindsTo=` / `PartOf=`. `mpv-profile-watch` runs on `default.target` because it only needs D-Bus.
 
-Bluetooth is **on-demand** to save battery: `bluetooth.service` and the radio are off when idle. The waybar Bluetooth module (`dotctl status bt`) shows the current state, and clicking it starts `bluetooth.service` (via the passwordless sudoers rule that `install.sh` sets up), powers the adapter on, and opens `blueman-manager`. The tray applet (`blueman-applet`) is not used.
+Bluetooth is **on-demand** to save battery: `bluetooth.service` and the radio are off when idle. The waybar Bluetooth module (`dotctl status bt`) shows the current state, and clicking it unblocks rfkill, starts `bluetooth.service` (via the passwordless sudoers rule that `install.sh` sets up), powers the adapter on, and opens `blueman-manager`. The tray applet (`blueman-applet`) is not used.
 
 This means when Hyprland exits, all services are cleaned up automatically.
 
@@ -48,8 +48,12 @@ By default `install.sh`:
 - installs the pinned `dotctl` release into `~/.local/bin` (checksum-verified;
   `--no-cli` skips it, `--cli-from-source` forces a local build);
 - enables the session services whose binaries are installed (`systemctl --user`);
-- writes the NOPASSWD sudoers rule for on-demand bluetooth (and remembers it,
-  so re-runs don't ask for a password);
+- writes the NOPASSWD sudoers rule for on-demand bluetooth (`systemctl`
+  start/stop plus `rfkill unblock`) and remembers it, so re-runs don't ask
+  for a password;
+- installs a udev rule giving the `video` group write access to
+  `/sys/class/backlight/*/brightness`, so `brightnessctl` works without sudo
+  (the user is added to `video` if needed; a new login may be required);
 - comments out the volume/brightness commands in `/etc/acpi/handler.sh` (only
   if `acpid` is installed), so acpid and Hyprland's media-key binds don't run
   the same key twice.
@@ -65,7 +69,7 @@ Options:
 | `--cli-from-source` | Build `dotctl` locally instead of downloading the release. |
 | `--no-cli` | Do not install/update `dotctl`. |
 | `--no-systemd` | Skip `daemon-reload` and enabling the session services. |
-| `--no-sudo` | Skip the system-level tweaks: the on-demand bluetooth sudoers rule and the acpid media-key patch. |
+| `--no-sudo` | Skip the system-level tweaks: the bluetooth sudoers rule, the backlight udev rule and the acpid media-key patch. |
 | `-h`, `--help` | Show usage. |
 
 Companion packages are excluded together: `--no-tlp` also excludes

@@ -94,6 +94,9 @@ fn mirror_logs(runtime: &Path, state: &Path) {
             Ok(_) => {
                 ensure_instance_watches(&mut inotify, runtime, &mut watched);
                 copy_newest_log(runtime, state);
+                // Coalesce bursts: copying the whole log on every inotify
+                // event is wasteful once the log grows to several MB.
+                thread::sleep(Duration::from_secs(1));
             }
             Err(err) => {
                 eprintln!("dotctl: guard: inotify read: {err}");

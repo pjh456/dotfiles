@@ -2,7 +2,8 @@ use std::env;
 use std::fs;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::thread;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use anyhow::{Context, Result, bail};
 use serde::Deserialize;
@@ -110,6 +111,26 @@ pub fn status() -> Result<()> {
 }
 
 pub fn refresh() -> Result<()> {
+    let mut last = None;
+    for attempt in 0..3 {
+        match refresh_once() {
+            Ok(()) => return Ok(()),
+            Err(err) => {
+                if attempt < 2 {
+                    eprintln!(
+                        "dotctl: weather refresh failed (attempt {}): {err:#}; retrying",
+                        attempt + 1
+                    );
+                    thread::sleep(Duration::from_secs(2));
+                }
+                last = Some(err);
+            }
+        }
+    }
+    Err(last.expect("at least one refresh attempt"))
+}
+
+fn refresh_once() -> Result<()> {
     let url = format!(
         "https://api.open-meteo.com/v1/forecast?latitude={LAT}&longitude={LON}&timezone=Asia%2FShanghai&forecast_days=7&current=temperature_2m,weather_code,apparent_temperature,relative_humidity_2m,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,sunrise,sunset,wind_speed_10m_max"
     );
@@ -351,7 +372,6 @@ fn spawn_refresh() {
         .args(["weather", "--refresh"])
         .stdin(Stdio::null())
         .stdout(Stdio::null())
-        .stderr(Stdio::null())
         .spawn();
 }
 

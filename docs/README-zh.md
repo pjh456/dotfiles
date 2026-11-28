@@ -15,7 +15,7 @@
 - `init.sh` 把 Wayland 环境变量导入 systemd，然后启动 `hyprland-session.target`
 - 所有守护进程（`waybar`、`swaync`、`hyprpaper`、`hypridle`、`fcitx5-daemon`、`power-profile`、`hyprland-guard`）通过 `BindsTo=` / `PartOf=` 绑定到该 target；`mpv-profile-watch` 只需要 D-Bus，挂在 `default.target`
 
-蓝牙是**按需启动**以省电的：空闲时 `bluetooth.service` 和无线电都是关闭的。waybar 的蓝牙模块（`dotctl status bt`）显示当前状态，点击它会启动 `bluetooth.service`（经由 `install.sh` 配置的免密 sudoers 规则）、打开适配器并启动 `blueman-manager`。不使用托盘小程序（`blueman-applet`）。
+蓝牙是**按需启动**以省电的：空闲时 `bluetooth.service` 和无线电都是关闭的。waybar 的蓝牙模块（`dotctl status bt`）显示当前状态，点击它会先解除 rfkill、启动 `bluetooth.service`（经由 `install.sh` 配置的免密 sudoers 规则）、打开适配器并启动 `blueman-manager`。不使用托盘小程序（`blueman-applet`）。
 
 因此 Hyprland 退出时，所有服务会被自动清理。
 
@@ -46,7 +46,11 @@ git clone https://github.com/pjh456/dotfiles ~/dotfiles
 - 把固定版本的 `dotctl` release 装到 `~/.local/bin`（校验 checksum；
   `--no-cli` 跳过，`--cli-from-source` 强制本地编译）；
 - 启用主程序已安装的会话服务（`systemctl --user`）；
-- 写入按需蓝牙的 NOPASSWD sudoers 规则，并记住已写入，重跑时不再要求输入密码；
+- 写入按需蓝牙的 NOPASSWD sudoers 规则（`systemctl` start/stop 和
+  `rfkill unblock`），并记住已写入，重跑时不再要求输入密码；
+- 写入背光 udev 规则，给 `video` 组 `/sys/class/backlight/*/brightness`
+  的写权限，让 `brightnessctl` 免 sudo 可用（需要时把用户加入 `video`
+  组；其他机器上可能要重新登录）；
 - 注释掉 `/etc/acpi/handler.sh` 里的音量/亮度命令（仅当装了 `acpid`），
   避免 acpid 和 Hyprland 的多媒体键绑定对同一次按键各执行一遍。
 
@@ -61,7 +65,7 @@ git clone https://github.com/pjh456/dotfiles ~/dotfiles
 | `--cli-from-source` | 不走 release，本地编译 `dotctl`。 |
 | `--no-cli` | 不安装/更新 `dotctl`。 |
 | `--no-systemd` | 跳过 `daemon-reload` 和会话服务启用。 |
-| `--no-sudo` | 跳过系统级调整：按需蓝牙的 sudoers 规则、acpid 多媒体键去重。 |
+| `--no-sudo` | 跳过系统级调整：蓝牙 sudoers 规则、背光 udev 规则、acpid 多媒体键去重。 |
 | `-h`, `--help` | 显示用法。 |
 
 伴生包会连带排除：`--no-tlp` 同时排除 `tlp-pd`。

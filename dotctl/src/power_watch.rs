@@ -1,8 +1,9 @@
+use std::collections::HashMap;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
-use anyhow::{Context, Result, bail};
-use inotify::{Inotify, WatchMask};
+use anyhow::{Context, Result};
+use inotify::{Inotify, WatchDescriptor, WatchMask};
 
 use crate::{daemon, power, ppd};
 
@@ -25,27 +26,29 @@ pub fn watch(once: bool) -> Result<()> {
         return Ok(());
     }
 
+    let root = Path::new("/sys/class/power_supply");
     let mut inotify = Inotify::init().context("init inotify")?;
-    let mut watched = 0;
-    for path in online_files(Path::new("/sys/class/power_supply")) {
-        if inotify
-            .watches()
-            .add(&path, WatchMask::MODIFY)
-            .with_context(|| format!("watch {}", path.display()))
-            .is_ok()
-        {
-            watched += 1;
-        }
-    }
-    if watched == 0 {
-        bail!("no /sys/class/power_supply/*/online files to watch");
-    }
+    // New power supplies (a USB-C charger, for example) appear as directory
+    // entries; watch the parent so they are not missed after startup.
+    let _ = inotify.watches().add(
+        root,
+        WatchMask::CREATE
+            | WatchMask::MOVED_TO
+            | WatchMask::DELETE
+            | WatchMask::MOVED_FROM
+            | WatchMask::ATTRIB,
+    );
+
+    let mut watched = HashMap::new();
+    sync_watches(&mut inotify, root, &mut watched);
 
     let mut buffer = [0u8; 4096];
     loop {
         inotify
             .read_events_blocking(&mut buffer)
             .context("read inotify events")?;
+
+        sync_watches(&mut inotify, root, &mut watched);
 
         let now_on_ac = power::ac_online();
         if now_on_ac == on_ac {
@@ -54,6 +57,29 @@ pub fn watch(once: bool) -> Result<()> {
         on_ac = now_on_ac;
         set_for_ac(&connection, on_ac);
     }
+}
+
+fn sync_watches(
+    inotify: &mut Inotify,
+    root: &Path,
+    watched: &mut HashMap<PathBuf, WatchDescriptor>,
+) {
+    for path in online_files(root) {
+        if watched.contains_key(&path) {
+            continue;
+        }
+        if let Ok(descriptor) = inotify.watches().add(&path, WatchMask::MODIFY) {
+            watched.insert(path, descriptor);
+        }
+    }
+
+    watched.retain(|path, descriptor| {
+        if path.exists() {
+            return true;
+        }
+        let _ = inotify.watches().remove(descriptor.clone());
+        false
+    });
 }
 
 fn set_for_ac(connection: &zbus::Connection, on_ac: bool) {
@@ -76,7 +102,7 @@ fn set_for_ac(connection: &zbus::Connection, on_ac: bool) {
     }
 }
 
-fn online_files(root: &Path) -> Vec<std::path::PathBuf> {
+fn online_files(root: &Path) -> Vec<PathBuf> {
     let Ok(entries) = fs::read_dir(root) else {
         return Vec::new();
     };
@@ -92,7 +118,7 @@ mod tests {
     use super::*;
     use std::time::{SystemTime, UNIX_EPOCH};
 
-    fn scratch() -> std::path::PathBuf {
+    fn scratch() -> PathBuf {
         let nanos = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()

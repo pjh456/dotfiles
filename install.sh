@@ -131,6 +131,27 @@ if [ "$with_restore" -eq 1 ]; then
     done < <(find "$restore_dir" -type f -print0)
   fi
 
+  if [ "$with_systemd" -eq 1 ] && command -v systemctl >/dev/null 2>&1; then
+    for unit in power-profile hyprland-guard mpv-profile-watch; do
+      if systemctl --user disable --now "$unit.service" >/dev/null 2>&1; then
+        echo "disabled $unit.service"
+      fi
+    done
+  fi
+
+  # Files removed from etc/ during the migration live under pruned/. Put them
+  # back as part of a restore so the pre-migration scripts are usable again.
+  if [ -d "$restore_dir/pruned" ]; then
+    while IFS= read -r -d '' src; do
+      rel="${src#"$restore_dir/pruned"/}"
+      target="$HOME/$rel"
+      mkdir -p "$(dirname "$target")"
+      rm -f "$target"
+      mv "$src" "$target"
+      RESTORED=$((RESTORED + 1))
+    done < <(find "$restore_dir/pruned" -type f -print0)
+  fi
+
   if [ -f "$HOME/.dotfiles-cli-version" ]; then
     rm -f "$HOME/.local/bin/dotctl" "$HOME/.dotfiles-cli-version"
     echo "removed the dotctl binary installed by this repo"
@@ -142,7 +163,7 @@ if [ "$with_restore" -eq 1 ]; then
   else
     echo "restored $RESTORED file(s) from $restore_dir (deployed files removed)"
   fi
-  echo "note: systemd enabling, the sudoers rule and the acpid media-key patch are not rolled back"
+  echo "note: the sudoers rule and the acpid media-key patch are not rolled back"
   exit 0
 fi
 
@@ -265,7 +286,7 @@ if [ "$with_packages" -eq 1 ]; then
           echo "note: without tlp the power-profile service cannot set a profile and the mpv profile stays 'balanced'"
           ;;
         lm_sensors)
-          echo "note: without lm_sensors the waybar temperature module shows N/A"
+          echo "note: without lm_sensors the sensors(1) command is missing; dotctl status temp still reads hwmon"
           ;;
         pass)
           echo "note: without pass, SNYK_TOKEN/HF_TOKEN stay unset and the hyprlock password prompt has no source"
@@ -418,6 +439,7 @@ fi
 if [ "$with_sudo" -eq 1 ]; then
   rule="/etc/sudoers.d/bluetooth-ondemand"
   marker="$HOME/.dotfiles-sudoers-bluetooth"
+  line="$USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl start bluetooth.service, /usr/bin/systemctl stop bluetooth.service, /usr/bin/rfkill unblock bluetooth"
   rule_state=unknown
   if sudo -n true 2>/dev/null; then
     if sudo -n test -e "$rule"; then
@@ -431,15 +453,23 @@ if [ "$with_sudo" -eq 1 ]; then
 
   case "$rule_state" in
     present)
-      printf 'verified %s\n' "$(date -Is)" >"$marker"
-      echo "sudoers rule present: $rule"
+      if sudo -n grep -qF '/usr/bin/rfkill unblock bluetooth' "$rule" 2>/dev/null; then
+        printf 'verified %s\n' "$(date -Is)" >"$marker"
+        echo "sudoers rule present: $rule"
+      elif echo "$line" | sudo -n tee "$rule" >/dev/null; then
+        sudo -n chmod 440 "$rule"
+        sudo -n visudo -c -f "$rule" >/dev/null
+        printf 'updated %s\n' "$(date -Is)" >"$marker"
+        echo "updated sudoers rule (added rfkill unblock): $rule"
+      else
+        echo "warning: sudoers rule is missing rfkill access; run 'sudo -v' and re-run install.sh" >&2
+      fi
       ;;
     assumed)
       echo "sudoers rule assumed present: $rule (run 'sudo -v' first to verify)"
       ;;
     *)
       if command -v sudo >/dev/null 2>&1; then
-        line="$USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl start bluetooth.service, /usr/bin/systemctl stop bluetooth.service"
         if echo "$line" | sudo tee "$rule" >/dev/null; then
           sudo chmod 440 "$rule"
           sudo visudo -c -f "$rule" >/dev/null
@@ -453,6 +483,43 @@ if [ "$with_sudo" -eq 1 ]; then
       fi
       ;;
   esac
+fi
+
+# --- 3b. backlight permissions ---------------------------------------------
+# The kernel exposes brightness as root:root 0644. A udev rule gives the
+# video group write access so brightnessctl works without sudo; the user is
+# added to video as well (a new login may be needed on other machines).
+if [ "$with_sudo" -eq 1 ]; then
+  bl_rule=/etc/udev/rules.d/90-backlight.rules
+  bl_rules=$(cat <<'EOF'
+ACTION=="add", SUBSYSTEM=="backlight", RUN+="/bin/chgrp video /sys/class/backlight/%k/brightness", RUN+="/bin/chmod g+w /sys/class/backlight/%k/brightness"
+ACTION=="change", SUBSYSTEM=="backlight", RUN+="/bin/chgrp video /sys/class/backlight/%k/brightness", RUN+="/bin/chmod g+w /sys/class/backlight/%k/brightness"
+EOF
+)
+  if sudo -n true 2>/dev/null; then
+    current="$(sudo -n cat "$bl_rule" 2>/dev/null || true)"
+    if [ "$current" != "$bl_rules" ]; then
+      if printf '%s\n' "$bl_rules" | sudo -n tee "$bl_rule" >/dev/null; then
+        echo "installed backlight udev rule: $bl_rule"
+      else
+        echo "warning: could not write $bl_rule" >&2
+      fi
+    else
+      echo "backlight udev rule present: $bl_rule"
+    fi
+
+    if ! id -nG "$USER" | tr ' ' '\n' | grep -qx video; then
+      if sudo -n usermod -aG video "$USER"; then
+        echo "added $USER to the video group (log out and back in to apply)"
+      else
+        echo "warning: could not add $USER to the video group" >&2
+      fi
+    fi
+
+    sudo -n udevadm trigger --subsystem-match=backlight --action=change 2>/dev/null || true
+  else
+    echo "note: run 'sudo -v' first to install the backlight udev rule" >&2
+  fi
 fi
 
 # --- 4. keep acpid off the media keys ---------------------------------------
