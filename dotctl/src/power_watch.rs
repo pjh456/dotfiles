@@ -140,4 +140,24 @@ mod tests {
         assert_eq!(files, vec![root.join("AC/online")]);
         fs::remove_dir_all(root).unwrap();
     }
+    #[test]
+    fn adds_and_removes_watches_as_supplies_appear() {
+        let root = scratch();
+        let mut inotify = Inotify::init().unwrap();
+        let mut watched = HashMap::new();
+
+        sync_watches(&mut inotify, &root, &mut watched);
+        assert!(watched.is_empty());
+
+        fs::create_dir_all(root.join("AC")).unwrap();
+        fs::write(root.join("AC/online"), "1").unwrap();
+        sync_watches(&mut inotify, &root, &mut watched);
+        assert_eq!(watched.len(), 1);
+
+        fs::remove_dir_all(root.join("AC")).unwrap();
+        sync_watches(&mut inotify, &root, &mut watched);
+        assert!(watched.is_empty());
+
+        fs::remove_dir_all(root).unwrap();
+    }
 }
