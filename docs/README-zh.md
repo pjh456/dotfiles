@@ -195,8 +195,11 @@ start-hyprland
 | `dotctl osd volume up\|down\|mute`、`dotctl osd brightness up\|down` | Hyprland 多媒体键 |
 | `dotctl menu clipboard\|emoji\|power\|launcher` | `Super + V`、`Super + .`、`Super + L`、`Super + Space` |
 | `dotctl watch mpv` | `mpv-profile-watch.service`（zbus PropertiesChanged） |
-| `dotctl watch power` | `power-profile.service`（inotify 监听 AC 状态） |
+| `dotctl watch power` | `power-profile.service`（1 秒 sysfs 轮询；只在 AC↔电池转换时动作） |
 | `dotctl guard` | `hyprland-guard.service`（日志镜像 + 卡死抓栈） |
+
+电源 profile watcher 和 TLP 的自动切换一样，只在电源来源变化时动作。拔电后
+如果你手动切到 `balanced` 或 `performance`，它会一直保持到你下次插拔电源。
 
 ### 开发
 

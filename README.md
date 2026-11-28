@@ -207,8 +207,12 @@ stopped), and the mpv/power watchers are event-driven instead of polling.
 | `dotctl osd volume up\|down\|mute`, `dotctl osd brightness up\|down` | Hyprland media keys |
 | `dotctl menu clipboard\|emoji\|power\|launcher` | `Super + V`, `Super + .`, `Super + L`, `Super + Space` |
 | `dotctl watch mpv` | `mpv-profile-watch.service` (zbus PropertiesChanged) |
-| `dotctl watch power` | `power-profile.service` (inotify on AC state) |
+| `dotctl watch power` | `power-profile.service` (1s sysfs poll; only acts on AC↔battery transitions) |
 | `dotctl guard` | `hyprland-guard.service` (log mirror + hang capture) |
+
+The power-profile watcher, like TLP's automatic switch, only acts when the
+power source changes. If you manually switch to `balanced` or `performance`
+after unplugging, that choice stays until the next plug/unplug.
 
 ### Development
 

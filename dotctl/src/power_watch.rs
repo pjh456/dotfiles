@@ -35,6 +35,8 @@ pub fn watch(once: bool) -> Result<()> {
         if now_on_ac == on_ac {
             continue;
         }
+        // Transition-only on purpose: a manual profile change made after a
+        // plug/unplug must stick until the next transition.
         on_ac = now_on_ac;
         set_for_ac(&connection, on_ac);
     }
