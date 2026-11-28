@@ -52,6 +52,8 @@ git clone https://github.com/pjh456/dotfiles ~/dotfiles
 - 写入背光 udev 规则，给 `video` 组 `/sys/class/backlight/*/brightness`
   的写权限，让 `brightnessctl` 免 sudo 可用（需要时把用户加入 `video`
   组；其他机器上可能要重新登录）；
+- 写入 `/etc/tlp.d/90-dotfiles-profile.conf`，让 TLP 自己在 AC 上选
+  `PRF`、电池上选 `SAV`；没有 TLP PPD 接口时仍由 dotctl watcher 兜底；
 - 注释掉 `/etc/acpi/handler.sh` 里的音量/亮度命令（仅当装了 `acpid`），
   避免 acpid 和 Hyprland 的多媒体键绑定对同一次按键各执行一遍。
 
@@ -66,7 +68,7 @@ git clone https://github.com/pjh456/dotfiles ~/dotfiles
 | `--cli-from-source` | 不走 release，本地编译 `dotctl`。 |
 | `--no-cli` | 不安装/更新 `dotctl`；使用已安装的二进制或 `DOTCTL_BIN`（安装器本身需要它）。 |
 | `--no-systemd` | 跳过 `daemon-reload` 和会话服务启用。 |
-| `--no-sudo` | 跳过系统级调整：蓝牙 sudoers 规则、背光 udev 规则、acpid 多媒体键去重。 |
+| `--no-sudo` | 跳过系统级调整：蓝牙 sudoers 规则、背光 udev 规则、TLP profile 策略、acpid 多媒体键去重。 |
 | `-h`, `--help` | 显示用法。 |
 
 伴生包会连带排除：`--no-tlp` 同时排除 `tlp-pd`。

@@ -436,6 +436,35 @@ EOF
   fi
 fi
 
+# --- 3c. TLP profile policy -------------------------------------------------
+# TLP's default auto-switch uses BAL on battery. Make its own profile
+# selection match this repo (PRF on AC, SAV on battery) so it cannot undo the
+# dotctl watcher's choice; the watcher remains the fallback for non-TLP PPD.
+if [ "$with_sudo" -eq 1 ] && command -v tlp-stat >/dev/null 2>&1 && [ -d /etc/tlp.d ]; then
+  tlp_rule=/etc/tlp.d/90-dotfiles-profile.conf
+  tlp_conf=$(cat <<'EOF'
+TLP_AUTO_SWITCH=1
+TLP_PROFILE_AC=PRF
+TLP_PROFILE_BAT=SAV
+EOF
+)
+  if sudo -n true 2>/dev/null || sudo -v; then
+    current="$(sudo -n cat "$tlp_rule" 2>/dev/null || true)"
+    if [ "$current" != "$tlp_conf" ]; then
+      if printf '%s\n' "$tlp_conf" | sudo -n tee "$tlp_rule" >/dev/null; then
+        echo "installed TLP profile policy: $tlp_rule"
+        sudo -n tlp start >/dev/null 2>&1 || true
+      else
+        echo "warning: could not write $tlp_rule" >&2
+      fi
+    else
+      echo "TLP profile policy present: $tlp_rule"
+    fi
+  else
+    echo "note: run 'sudo -v' first to install the TLP profile policy" >&2
+  fi
+fi
+
 # --- 4. keep acpid off the media keys ---------------------------------------
 # Hyprland (keys.lua -> dotctl osd) owns volume/brightness. acpid's input layer
 # still turns the same keycodes into button/mute, button/volumeup, ... and

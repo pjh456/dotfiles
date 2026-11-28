@@ -1,9 +1,7 @@
-use std::collections::HashMap;
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::thread;
+use std::time::Duration;
 
-use anyhow::{Context, Result};
-use inotify::{Inotify, WatchDescriptor, WatchMask};
+use anyhow::Result;
 
 use crate::{daemon, power, ppd};
 
@@ -26,29 +24,12 @@ pub fn watch(once: bool) -> Result<()> {
         return Ok(());
     }
 
-    let root = Path::new("/sys/class/power_supply");
-    let mut inotify = Inotify::init().context("init inotify")?;
-    // New power supplies (a USB-C charger, for example) appear as directory
-    // entries; watch the parent so they are not missed after startup.
-    let _ = inotify.watches().add(
-        root,
-        WatchMask::CREATE
-            | WatchMask::MOVED_TO
-            | WatchMask::DELETE
-            | WatchMask::MOVED_FROM
-            | WatchMask::ATTRIB,
-    );
-
-    let mut watched = HashMap::new();
-    sync_watches(&mut inotify, root, &mut watched);
-
-    let mut buffer = [0u8; 4096];
+    // sysfs does not reliably deliver inotify events for power_supply changes
+    // on this hardware (TLP ended up being the only actor). Reading three tiny
+    // files once a second is cheaper and far more reliable than a missed
+    // transition; this is still well below the old busctl/tlp-stat polling.
     loop {
-        inotify
-            .read_events_blocking(&mut buffer)
-            .context("read inotify events")?;
-
-        sync_watches(&mut inotify, root, &mut watched);
+        thread::sleep(Duration::from_secs(1));
 
         let now_on_ac = power::ac_online();
         if now_on_ac == on_ac {
@@ -57,29 +38,6 @@ pub fn watch(once: bool) -> Result<()> {
         on_ac = now_on_ac;
         set_for_ac(&connection, on_ac);
     }
-}
-
-fn sync_watches(
-    inotify: &mut Inotify,
-    root: &Path,
-    watched: &mut HashMap<PathBuf, WatchDescriptor>,
-) {
-    for path in online_files(root) {
-        if watched.contains_key(&path) {
-            continue;
-        }
-        if let Ok(descriptor) = inotify.watches().add(&path, WatchMask::MODIFY) {
-            watched.insert(path, descriptor);
-        }
-    }
-
-    watched.retain(|path, descriptor| {
-        if path.exists() {
-            return true;
-        }
-        let _ = inotify.watches().remove(descriptor.clone());
-        false
-    });
 }
 
 fn set_for_ac(connection: &zbus::Connection, on_ac: bool) {
@@ -99,65 +57,5 @@ fn set_for_ac(connection: &zbus::Connection, on_ac: bool) {
     match zbus::block_on(ppd::set_profile(connection, wanted)) {
         Ok(()) => daemon::refresh_waybar(),
         Err(err) => eprintln!("dotctl: power watch: set {wanted}: {err:#}"),
-    }
-}
-
-fn online_files(root: &Path) -> Vec<PathBuf> {
-    let Ok(entries) = fs::read_dir(root) else {
-        return Vec::new();
-    };
-    entries
-        .flatten()
-        .map(|entry| entry.path().join("online"))
-        .filter(|path| path.is_file())
-        .collect()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::time::{SystemTime, UNIX_EPOCH};
-
-    fn scratch() -> PathBuf {
-        let nanos = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let dir = std::env::temp_dir().join(format!("dotctl-watch-{}-{nanos}", std::process::id()));
-        fs::create_dir_all(&dir).unwrap();
-        dir
-    }
-
-    #[test]
-    fn finds_only_existing_online_files() {
-        let root = scratch();
-        fs::create_dir_all(root.join("AC")).unwrap();
-        fs::write(root.join("AC/online"), "1").unwrap();
-        fs::create_dir_all(root.join("BAT0")).unwrap();
-        fs::write(root.join("BAT0/type"), "Battery").unwrap();
-
-        let files = online_files(&root);
-        assert_eq!(files, vec![root.join("AC/online")]);
-        fs::remove_dir_all(root).unwrap();
-    }
-    #[test]
-    fn adds_and_removes_watches_as_supplies_appear() {
-        let root = scratch();
-        let mut inotify = Inotify::init().unwrap();
-        let mut watched = HashMap::new();
-
-        sync_watches(&mut inotify, &root, &mut watched);
-        assert!(watched.is_empty());
-
-        fs::create_dir_all(root.join("AC")).unwrap();
-        fs::write(root.join("AC/online"), "1").unwrap();
-        sync_watches(&mut inotify, &root, &mut watched);
-        assert_eq!(watched.len(), 1);
-
-        fs::remove_dir_all(root.join("AC")).unwrap();
-        sync_watches(&mut inotify, &root, &mut watched);
-        assert!(watched.is_empty());
-
-        fs::remove_dir_all(root).unwrap();
     }
 }

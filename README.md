@@ -56,6 +56,9 @@ By default `install.sh`:
 - installs a udev rule giving the `video` group write access to
   `/sys/class/backlight/*/brightness`, so `brightnessctl` works without sudo
   (the user is added to `video` if needed; a new login may be required);
+- writes `/etc/tlp.d/90-dotfiles-profile.conf` so TLP itself selects `PRF`
+  on AC and `SAV` on battery; the dotctl watcher remains the fallback for
+  systems without TLP's PPD interface;
 - comments out the volume/brightness commands in `/etc/acpi/handler.sh` (only
   if `acpid` is installed), so acpid and Hyprland's media-key binds don't run
   the same key twice.
@@ -71,7 +74,7 @@ Options:
 | `--cli-from-source` | Build `dotctl` locally instead of downloading the release. |
 | `--no-cli` | Do not install/update `dotctl`; use an existing binary or `DOTCTL_BIN` (the installer itself needs one). |
 | `--no-systemd` | Skip `daemon-reload` and enabling the session services. |
-| `--no-sudo` | Skip the system-level tweaks: the bluetooth sudoers rule, the backlight udev rule and the acpid media-key patch. |
+| `--no-sudo` | Skip the system-level tweaks: the bluetooth sudoers rule, the backlight udev rule, the TLP profile policy and the acpid media-key patch. |
 | `-h`, `--help` | Show usage. |
 
 Companion packages are excluded together: `--no-tlp` also excludes
