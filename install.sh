@@ -496,7 +496,7 @@ ACTION=="add", SUBSYSTEM=="backlight", RUN+="/bin/chgrp video /sys/class/backlig
 ACTION=="change", SUBSYSTEM=="backlight", RUN+="/bin/chgrp video /sys/class/backlight/%k/brightness", RUN+="/bin/chmod g+w /sys/class/backlight/%k/brightness"
 EOF
 )
-  if sudo -n true 2>/dev/null; then
+  if sudo -n true 2>/dev/null || sudo -v; then
     current="$(sudo -n cat "$bl_rule" 2>/dev/null || true)"
     if [ "$current" != "$bl_rules" ]; then
       if printf '%s\n' "$bl_rules" | sudo -n tee "$bl_rule" >/dev/null; then
